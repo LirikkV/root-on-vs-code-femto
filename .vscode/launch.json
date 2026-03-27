@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "(gdb) Launch",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/Macro_1/picoAnalyzerStandalone",//compilated program here
+      "args": [
+        //"${workspaceFolder}/Data_Expiriment_1/st_physics_adc_22031042_raw_0000002.picoDst.root", //input file here
+        "${workspaceFolder}/Data_Expiriment_1/DataSet_4.list", //input file here
+        "${workspaceFolder}/Output_Data_1/Output_file_4.root" //output file here
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      //preLaunchTask need to match with label in task.json file! check it
+      "preLaunchTask": "build-picoAnalyzer", // it's label of a task, that's recompile our macro.C
+      "miDebuggerPath": "/usr/bin/gdb" //path to debugger
+    }
+  ]
+}

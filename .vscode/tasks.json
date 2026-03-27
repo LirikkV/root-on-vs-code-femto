@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-picoAnalyzer",
+      "type": "shell",
+      "command": "make",
+      "args": ["-B", //flag for rebuild macro
+              "-j4", //flag for run Makefile
+              "DEBUGFLAG=-ggdb -g3",//flag for compile with debug information. we also can put this into Makefile
+              "OPTFLAG=-O2" // flag for MUCH BETTER optimization
+                  ],
+      "options": {
+        "cwd": "${workspaceFolder}/Macro_1" //path to Make-file
+      },
+      "group": {
+      "kind": "build",
+      "isDefault": true
+      },
+      "problemMatcher": ["$gcc"]
+    }
+  ]
+}
