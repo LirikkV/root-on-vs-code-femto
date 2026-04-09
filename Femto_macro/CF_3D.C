@@ -12,7 +12,7 @@ using namespace::std;
 
 void CF_3D()
 {
-TFile *f = TFile::Open("/home/lirikk/root-on-vscode/Output_Data_1/Output_file_4.root", "READ");
+TFile *f = TFile::Open("/home/kirill/root-on-vs-code/Femto_macro/Output_file_1.root", "READ");
 //for Pi+Pi+:
 TH1D *hA_Plus = (TH1D*)f->Get("hA_Pi_Plus_q_inv_ALL");
 TH1D *hB_Plus = (TH1D*)f->Get("hB_Pi_Plus_q_inv_ALL");
@@ -169,7 +169,7 @@ CF_Pi_Plus_long_Project_first_non_norm->GetYaxis()->SetTitle("CF");
 
 
 
-TFile *f_out = new TFile("/home/lirikk/root-on-vscode/Output_Data_1/Output_file_4_pr.root", "RECREATE");
+TFile *f_out = new TFile("/home/kirill/root-on-vs-code/Femto_macro/Output_file_1_pr.root", "RECREATE");
 CF_Pi_Plus_non_nrom->Write();
 CF_Pi_Plus->Write();
 CF_Pi_Minus_Meth_1->Write();

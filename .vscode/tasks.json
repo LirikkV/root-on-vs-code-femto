@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build-picoAnalyzer",
+      "label": "build-femtoAnalyzer",
       "type": "shell",
       "command": "make",
       "args": ["-B", //flag for rebuild macro
@@ -11,7 +11,7 @@
               "OPTFLAG=-O2" // flag for MUCH BETTER optimization
                   ],
       "options": {
-        "cwd": "${workspaceFolder}/Macro_1" //path to Make-file
+        "cwd": "${workspaceFolder}/Femto_macro" //path to Make-file
       },
       "group": {
       "kind": "build",

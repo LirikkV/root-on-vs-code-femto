@@ -44,20 +44,20 @@
 #include "TStopwatch.h"
 #include <TRandom3.h>
 
-// PicoDst headers
-#include "StPicoDstReader.h"
-#include "StPicoDst.h"
-#include "StPicoEvent.h"
-#include "StPicoTrack.h"
-#include "StPicoBTofHit.h"
-#include "StPicoBTowHit.h"
-#include "StPicoEmcTrigger.h"
-#include "StPicoBTofPidTraits.h"
-#include "StPicoTrackCovMatrix.h"
-#include "StPicoFmsHit.h"
-#include "StPicoETofHit.h"
-#include "StPicoEpdHit.h"
-#include "StPicoPhysicalHelix.h"
+// FemtoDst headers
+#include "StFemtoDstReader.h"
+#include "StFemtoDst.h"
+#include "StFemtoEvent.h"
+#include "StFemtoTrack.h"
+// #include "StFemtoBTofHit.h"
+// #include "StFemtoBTowHit.h"
+// #include "StFemtoEmcTrigger.h"
+// #include "StFemtoBTofPidTraits.h"
+// #include "StFemtoTrackCovMatrix.h"
+// #include "StFemtoFmsHit.h"
+// #include "StFemtoETofHit.h"
+#include "StFemtoEpdHit.h"
+#include "StFemtoPhysicalHelix.h"
 
 //It's better use ROOT::Math::LorentzVector instead of TLorenzVector
 const Double_t m_Pion = 0.13957039;//GeV
@@ -69,7 +69,7 @@ struct My_ParticleTrackInfo{
   UInt_t topologyMap1;
   ULong64_t iTpcTopologyMap;
   Int_t Nhits;
-  StPicoPhysicalHelix helix;
+  StFemtoPhysicalHelix helix;
 };
 //function for out, side, long projections of q:
 void Get_q_inv_q_osl(const double& px1,const double& py1,const double& pz1,const double& e1,
@@ -146,9 +146,9 @@ double getSplitLevel(const My_ParticleTrackInfo& tr_1,const My_ParticleTrackInfo
 const double FMR_max = 0.1;
 int TpcLocalTransform( TVector3& aPoint, int& aSector, int& aRow, float& aU, double& aPhi);
 //_________________
-void calculateTpcExitAndEntrancePoints(StPicoPhysicalHelix tHelix,TVector3 PrimVert,TVector3 SecVert,TVector3 tmpTpcEntrancePoint,TVector3 tmpTpcExitPoint,TVector3* tmpPosSample,float* tmpZ,float* tmpU,int* tmpSect);
+void calculateTpcExitAndEntrancePoints(StFemtoPhysicalHelix tHelix,TVector3 PrimVert,TVector3 SecVert,TVector3 tmpTpcEntrancePoint,TVector3 tmpTpcExitPoint,TVector3* tmpPosSample,float* tmpZ,float* tmpU,int* tmpSect);
 //_________________
-double fractionOfMergedRow(StPicoPhysicalHelix helixTrk1, StPicoPhysicalHelix helixTrk2);
+double fractionOfMergedRow(StFemtoPhysicalHelix helixTrk1, StFemtoPhysicalHelix helixTrk2);
 //_________________
 
 void fill_A_qinv(const std::vector<My_ParticleTrackInfo>& Pions_4_momenta_hits_Arr, TH1D* hist_A, TH2F* hSL_A, 
@@ -275,9 +275,9 @@ int main(int argc, char* argv[]) {
 //for track shuffle:
 gRandom->SetSeed(42);
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
-  R__LOAD_LIBRARY(libStPicoDst);
+  R__LOAD_LIBRARY(libStFemtoDst);
 #else
-  gSystem->Load("../libs/libStPicoDst.so");
+  gSystem->Load("../libs/libStFemtoDst.so");
 #endif
 
   //let's see how much time program get:
@@ -294,37 +294,37 @@ gRandom->SetSeed(42);
     oFileName = argv[2];
     break;
   default:
-    std::cout << "Usage: picoAnalyzerStandalone inputFileName outputFileName.root" << std::endl;
+    std::cout << "Usage: femtoAnalyzerStandalone inputFileName outputFileName.root" << std::endl;
     return -1;
   }
   std::cout << " inputFileName : " << fileName << std::endl;
   std::cout << " outputFileName: " << oFileName << std::endl;
   
-  StPicoDstReader* picoReader = new StPicoDstReader(fileName);
-  picoReader->Init();
+  StFemtoDstReader* femtoReader = new StFemtoDstReader(fileName);
+  femtoReader->Init();
 
   // This is a way if you want to spead up I/O
   std::cout << "Explicit read status for some branches" << std::endl;
-  picoReader->SetStatus("*",0);
-  picoReader->SetStatus("Event*", 1);
-  picoReader->SetStatus("Track*", 1);
-  picoReader->SetStatus("BTofHit*", 1);
-  picoReader->SetStatus("BTofPidTraits*", 1);
-  picoReader->SetStatus("BTowHit*", 1);
-  picoReader->SetStatus("ETofHit*", 1);
-  picoReader->SetStatus("EpdHit*", 1);
-  //picoReader->SetStatus("EmcTrigger",0);
-  //picoReader->SetStatus("TrackCovMatrix",1);
+  femtoReader->SetStatus("*",0);
+  femtoReader->SetStatus("Event*", 1);
+  femtoReader->SetStatus("Track*", 1);
+  femtoReader->SetStatus("BTofHit*", 1);
+  femtoReader->SetStatus("BTofPidTraits*", 1);
+  femtoReader->SetStatus("BTowHit*", 1);
+  femtoReader->SetStatus("ETofHit*", 1);
+  femtoReader->SetStatus("EpdHit*", 1);
+  //femtoReader->SetStatus("EmcTrigger",0);
+  //femtoReader->SetStatus("TrackCovMatrix",1);
   std::cout << "Status has been set" << std::endl;
 
   std::cout << "Now I know what to read, Master!" << std::endl;
 
-  if( !picoReader->chain() ) {
+  if( !femtoReader->chain() ) {
     std::cout << "No chain has been found." << std::endl;
   }
-  Long64_t eventsInTree = picoReader->tree()->GetEntries();
+  Long64_t eventsInTree = femtoReader->tree()->GetEntries();
   std::cout << "eventsInTree: "  << eventsInTree << std::endl;
-  Long64_t events2read = picoReader->chain()->GetEntries();
+  Long64_t events2read = femtoReader->chain()->GetEntries();
 
   std::cout << "Number of events to read: " << events2read
 	    << std::endl;
@@ -546,7 +546,7 @@ gRandom->SetSeed(42);
     std::cout << "Working on event #[" << (iEvent+1)
 	      << "/" << events2read << "]" << std::endl;
     }
-    Bool_t readEvent = picoReader->readPicoEvent(iEvent);
+    Bool_t readEvent = femtoReader->readFemtoEvent(iEvent);
     if( !readEvent ) {
       std::cout << "Something went wrong, Master! Nothing to analyze..."
 		<< std::endl;
@@ -557,11 +557,11 @@ gRandom->SetSeed(42);
     Pions_Plus_4_momenta_hits_Arr_ALL.clear();
     Pions_Minus_4_momenta_hits_Arr_ALL.clear();
 
-    // Retrieve picoDst
-    StPicoDst *dst = picoReader->picoDst();
+    // Retrieve femtoDst
+    StFemtoDst *dst = femtoReader->femtoDst();
 
     // Retrieve event information
-    StPicoEvent *event = dst->event();
+    StFemtoEvent *event = dst->event();
     if( !event ) {
       std::cout << "Something went wrong, Master! Event is hiding from me..."
 		<< std::endl;
@@ -600,20 +600,20 @@ gRandom->SetSeed(42);
     for(Int_t iTrk=0; iTrk<nTracks; iTrk++) {
 
 
-      // Retrieve i-th pico track
-      StPicoTrack *picoTrack = dst->track(v_shuffle[iTrk]);//shuffled traks!
+      // Retrieve i-th femto track
+      StFemtoTrack *femtoTrack = dst->track(v_shuffle[iTrk]);//shuffled traks!
 
-      if(!picoTrack) continue;
+      if(!femtoTrack) continue;
       
     //QA hists before track selection:
-    hNFitHits->Fill(picoTrack->nHitsFit());
-    hDCA->Fill(picoTrack->gDCA(pVtx).Mag());  
-    if (picoTrack->isPrimary())
+    hNFitHits->Fill(femtoTrack->nHitsFit());
+    hDCA->Fill(femtoTrack->gDCA(pVtx).Mag());  
+    if (femtoTrack->isPrimary())
     {
-      hPrimaryPtot->Fill(picoTrack->pMom().Mag());
-      hPrimaryPtrans->Fill(picoTrack->pMom().Pt());
-      hPrimaryPseudorap->Fill(picoTrack->pMom().Eta());
-      h2DpPrimTr_vs_etaPtim->Fill(picoTrack->pMom().Pt(),picoTrack->pMom().Eta());
+      hPrimaryPtot->Fill(femtoTrack->pMom().Mag());
+      hPrimaryPtrans->Fill(femtoTrack->pMom().Pt());
+      hPrimaryPseudorap->Fill(femtoTrack->pMom().Eta());
+      h2DpPrimTr_vs_etaPtim->Fill(femtoTrack->pMom().Pt(),femtoTrack->pMom().Eta());
     }
     
     //Track selection:
@@ -626,33 +626,33 @@ gRandom->SetSeed(42);
     Double_t p_trans_prim_max = 1.5;
     Double_t pseudo_rap_prim_max = 1.0;
     //track selection:
-    Bool_t is_N_TPC_fit_hits_cut = picoTrack->nHitsFit()>=N_TPC_fit_hits_min;
+    Bool_t is_N_TPC_fit_hits_cut = femtoTrack->nHitsFit()>=N_TPC_fit_hits_min;
     if(!is_N_TPC_fit_hits_cut) continue;
-    Bool_t is_DCA_abs_cut = picoTrack->gDCA(pVtx).Mag()<DCA_max;
+    Bool_t is_DCA_abs_cut = femtoTrack->gDCA(pVtx).Mag()<DCA_max;
     if(!is_DCA_abs_cut) continue;
-    Bool_t is_pseudo_prm_cut = picoTrack->isPrimary() &&
-                            fabs(picoTrack->pMom().Eta())<pseudo_rap_prim_max;
+    Bool_t is_pseudo_prm_cut = femtoTrack->isPrimary() &&
+                            fabs(femtoTrack->pMom().Eta())<pseudo_rap_prim_max;
     if(!is_pseudo_prm_cut) continue;
-    Bool_t is_p_tot_prim_cut = picoTrack->isPrimary() && 
-                            p_tot_prim_min < picoTrack->pMom().Mag() &&
-                            picoTrack->pMom().Mag()<p_tot_prim_max;
+    Bool_t is_p_tot_prim_cut = femtoTrack->isPrimary() && 
+                            p_tot_prim_min < femtoTrack->pMom().Mag() &&
+                            femtoTrack->pMom().Mag()<p_tot_prim_max;
     if(!is_p_tot_prim_cut) continue;
-    Bool_t is_p_trans_prim_cut = picoTrack->isPrimary() && 
-                            p_trans_prim_min<picoTrack->pMom().Pt() &&
-                            picoTrack->pMom().Pt()<p_trans_prim_max;
+    Bool_t is_p_trans_prim_cut = femtoTrack->isPrimary() && 
+                            p_trans_prim_min<femtoTrack->pMom().Pt() &&
+                            femtoTrack->pMom().Pt()<p_trans_prim_max;
     if(is_p_trans_prim_cut) 
     {
       //QA after track selection:
-      hNFitHits_cut->Fill(picoTrack->nHitsFit());
-	    hPrimaryPtot_cut->Fill( picoTrack->pMom().Mag() );
-      hDCA_cut->Fill(picoTrack->gDCA(pVtx).Mag());
-      hPrimaryPtrans_cut->Fill(picoTrack->pMom().Pt());
-      hPrimaryPseudorap_cut->Fill(picoTrack->pMom().Eta());
-      h2DpPrimTr_vs_etaPtim_cut->Fill(picoTrack->pMom().Pt(),picoTrack->pMom().Eta());
+      hNFitHits_cut->Fill(femtoTrack->nHitsFit());
+	    hPrimaryPtot_cut->Fill( femtoTrack->pMom().Mag() );
+      hDCA_cut->Fill(femtoTrack->gDCA(pVtx).Mag());
+      hPrimaryPtrans_cut->Fill(femtoTrack->pMom().Pt());
+      hPrimaryPseudorap_cut->Fill(femtoTrack->pMom().Eta());
+      h2DpPrimTr_vs_etaPtim_cut->Fill(femtoTrack->pMom().Pt(),femtoTrack->pMom().Eta());
 
       //start of PID:
       //variables for PID:
-      Double_t PtotPrimQ = (picoTrack->pMom().Mag())/(picoTrack->charge());
+      Double_t PtotPrimQ = (femtoTrack->pMom().Mag())/(femtoTrack->charge());
 
       //constants for PID:
       Double_t p_tot_prim_mid_PID = 0.55;//Gev/c
@@ -667,53 +667,53 @@ gRandom->SetSeed(42);
 
 
       //QA before PID TPC or TPC+TOF check:
-      hNSigmPion_vs_pPrimTotDevQ->Fill(PtotPrimQ, picoTrack->nSigmaPion());
-      hNSigmKaon_vs_pPrimTotDevQ->Fill(PtotPrimQ, picoTrack->nSigmaKaon());
-      hNSigmProton_vs_pPrimTotDevQ->Fill(PtotPrimQ, picoTrack->nSigmaProton());
-      hNSigmElectron_vs_pPrimTotDevQ->Fill(PtotPrimQ, picoTrack->nSigmaElectron());
-      hdEdx_vs_pPrimTotDevQ->Fill(PtotPrimQ, picoTrack->dEdx());
+      hNSigmPion_vs_pPrimTotDevQ->Fill(PtotPrimQ, femtoTrack->nSigmaPion());
+      hNSigmKaon_vs_pPrimTotDevQ->Fill(PtotPrimQ, femtoTrack->nSigmaKaon());
+      hNSigmProton_vs_pPrimTotDevQ->Fill(PtotPrimQ, femtoTrack->nSigmaProton());
+      hNSigmElectron_vs_pPrimTotDevQ->Fill(PtotPrimQ, femtoTrack->nSigmaElectron());
+      hdEdx_vs_pPrimTotDevQ->Fill(PtotPrimQ, femtoTrack->dEdx());
       
-      Bool_t is_TPC_momenta_range = picoTrack->pMom().Mag()<p_tot_prim_mid_PID;
-      Bool_t is_TPC_TOF_momenta_range = picoTrack->isTofTrack() && p_tot_prim_mid_PID<=picoTrack->pMom().Mag();
+      Bool_t is_TPC_momenta_range = femtoTrack->pMom().Mag()<p_tot_prim_mid_PID;
+      Bool_t is_TPC_TOF_momenta_range = femtoTrack->isTofTrack() && p_tot_prim_mid_PID<=femtoTrack->pMom().Mag();
       //TPC only PID:
       if(is_TPC_momenta_range) //p_min already set by track choise
       {
 
-        Bool_t is_nSigma_Pion_TPC = fabs(picoTrack->nSigmaPion())<nSigmaPion_max_TPC;
+        Bool_t is_nSigma_Pion_TPC = fabs(femtoTrack->nSigmaPion())<nSigmaPion_max_TPC;
         if(!is_nSigma_Pion_TPC) continue;
-        Bool_t is_nSigma_Kaon_TPC = fabs(picoTrack->nSigmaKaon())>nSigmaKaon_min_TPC;
+        Bool_t is_nSigma_Kaon_TPC = fabs(femtoTrack->nSigmaKaon())>nSigmaKaon_min_TPC;
         if(!is_nSigma_Kaon_TPC) continue;
-        Bool_t is_nSigma_Proton_TPC = fabs(picoTrack->nSigmaProton())>nSigmaProton_min_TPC;
+        Bool_t is_nSigma_Proton_TPC = fabs(femtoTrack->nSigmaProton())>nSigmaProton_min_TPC;
         if(!is_nSigma_Proton_TPC) continue;
-        Bool_t is_nSigma_Electron_TPC = fabs(picoTrack->nSigmaElectron())>nSigmaElectron_min_TPC;
+        Bool_t is_nSigma_Electron_TPC = fabs(femtoTrack->nSigmaElectron())>nSigmaElectron_min_TPC;
         if(is_nSigma_Electron_TPC)
         {
           //QA histis filling after PID but after TPC only:
-          hNSigmPion_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, picoTrack->nSigmaPion());
-          hNSigmKaon_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, picoTrack->nSigmaKaon());
-          hNSigmProton_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, picoTrack->nSigmaProton());
-          hNSigmElectron_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, picoTrack->nSigmaElectron());
-          hdEdx_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,picoTrack->dEdx());
+          hNSigmPion_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaPion());
+          hNSigmKaon_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaKaon());
+          hNSigmProton_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaProton());
+          hNSigmElectron_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaElectron());
+          hdEdx_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,femtoTrack->dEdx());
           //let's fill c++ vector of Pions after TPC only:
-          Double_t temp_pion_Energy_TPC_ONLY = sqrt(picoTrack->pMom().Mag2()+m_Pion*m_Pion);
-          My_LorenzVector temp_four_vector(picoTrack->pMom().Px(), picoTrack->pMom().Py(), 
-                              picoTrack->pMom().Pz(), temp_pion_Energy_TPC_ONLY);
+          Double_t temp_pion_Energy_TPC_ONLY = sqrt(femtoTrack->pMom().Mag2()+m_Pion*m_Pion);
+          My_LorenzVector temp_four_vector(femtoTrack->pMom().Px(), femtoTrack->pMom().Py(), 
+                              femtoTrack->pMom().Pz(), temp_pion_Energy_TPC_ONLY);
 
           My_ParticleTrackInfo temp_MyParticle;
           temp_MyParticle.p4 = temp_four_vector;
-          temp_MyParticle.topologyMap0 = picoTrack->topologyMap(0);
-          temp_MyParticle.topologyMap1 = picoTrack->topologyMap(1);
-          temp_MyParticle.iTpcTopologyMap = picoTrack->iTpcTopologyMap();
-          temp_MyParticle.Nhits = picoTrack->nHits();
-          temp_MyParticle.helix = picoTrack->helix( event->bField() );
+          temp_MyParticle.topologyMap0 = femtoTrack->map0();
+          temp_MyParticle.topologyMap1 = femtoTrack->map1();
+          temp_MyParticle.iTpcTopologyMap = femtoTrack->iTpcTopologyMap();
+          temp_MyParticle.Nhits = femtoTrack->nHits();
+          temp_MyParticle.helix = femtoTrack->helix( event->magneticField() );
 
           //separation to Pi+Pi+ & Pi-Pi- pairs
-          if(picoTrack->charge()>0.)
+          if(femtoTrack->charge()>0.)
           {
             //let's fill
             Pions_Plus_4_momenta_hits_Arr_ALL.push_back(temp_MyParticle);
           }
-          else if(picoTrack->charge()<0.)
+          else if(femtoTrack->charge()<0.)
           {
             Pions_Minus_4_momenta_hits_Arr_ALL.push_back(temp_MyParticle);
           }
@@ -723,65 +723,69 @@ gRandom->SetSeed(42);
       //TPC+TOF PID:
       else if( is_TPC_TOF_momenta_range ) //p_max already set by track choise
       {
-      StPicoBTofPidTraits *trait = dst->btofPidTraits(picoTrack->bTofPidTraitsIndex()); // Retrieve corresponding trait
-      if (!trait)
-      {
-        std::cout << "O-oh... No BTofPidTrait # " << picoTrack->bTofPidTraitsIndex()
-                  << " for track # " << iTrk << std::endl;
-        std::cout << "Check that you turned on the branch!" << std::endl;
-        continue;
-      }
+      // StFemtoBTofPidTraits *trait = dst->btofPidTraits(femtoTrack->bTofPidTraitsIndex()); // Retrieve corresponding trait
+      // if (!trait)
+      // {
+      //   std::cout << "O-oh... No BTofPidTrait # " << femtoTrack->bTofPidTraitsIndex()
+      //             << " for track # " << iTrk << std::endl;
+      //   std::cout << "Check that you turned on the branch!" << std::endl;
+      //   continue;
+      // }
       
       //variables for QA:
-      Double_t m_square = picoTrack->pMom().Mag2()*(1./((trait->btofBeta())*(trait->btofBeta()))-1.);
+      Double_t m_square = femtoTrack->massSqr();
+      //femtoTrack->pMom().Mag2()*(1./((trait->btofBeta())*(trait->btofBeta()))-1.);
       Double_t m_Pion = 0.13957039;//GeV
-      Double_t one_beta_expect = sqrt(m_Pion*m_Pion+(picoTrack->pMom().Mag2()))/(picoTrack->pMom().Mag());
+      Double_t one_beta_expect = sqrt(m_Pion*m_Pion+(femtoTrack->pMom().Mag2()))/(femtoTrack->pMom().Mag());
+      
+      Double_t beta_TOF = femtoTrack->beta();
 
       //QA hists before PID but after TOF check (all that contains trait):
-      h1_OverBeta_vs_pPrimTotDevQ->Fill(PtotPrimQ,1./(trait->btofBeta()));
-      hm2_vs_pPrimTotDevQ->Fill(PtotPrimQ,m_square);
-      h1_OverBetaDelta_vs_pPrimTotDevQ->Fill(PtotPrimQ, 1./(trait->btofBeta()) - one_beta_expect);
       
-      hTEST_Beta_pPrimTotDevQ->Fill(PtotPrimQ,(1./((trait->btofBeta())*(trait->btofBeta()))-1.));
-      hTEST_P2_pPrimTotDevQ->Fill(PtotPrimQ, picoTrack->pMom().Mag2());
+      h1_OverBeta_vs_pPrimTotDevQ->Fill(PtotPrimQ,1./(beta_TOF));
+      hm2_vs_pPrimTotDevQ->Fill(PtotPrimQ,m_square);
+      h1_OverBetaDelta_vs_pPrimTotDevQ->Fill(PtotPrimQ, 1./(beta_TOF) - one_beta_expect);
+      
+      hTEST_Beta_pPrimTotDevQ->Fill(PtotPrimQ,(1./((beta_TOF)*(beta_TOF))-1.));
+      hTEST_P2_pPrimTotDevQ->Fill(PtotPrimQ, femtoTrack->pMom().Mag2());
 
-      Bool_t is_nSigma_Pion = fabs(picoTrack->nSigmaPion())<nSigmaPion_max_TOF;
+      Bool_t is_nSigma_Pion = fabs(femtoTrack->nSigmaPion())<nSigmaPion_max_TOF;
       if(!is_nSigma_Pion) continue;
-      Bool_t is_1_beta_delta = fabs(1./(trait->btofBeta())-one_beta_expect)<one_over_beta_delta_max;
+      Bool_t is_1_beta_delta = fabs(1./(beta_TOF)-one_beta_expect)<one_over_beta_delta_max;
       if(!is_1_beta_delta) continue;
       Bool_t is_m2 = m2_min<m_square && m_square<m2_max;
       if(is_m2)
       {
         //QA hists filling after PID TPC+TOF cut:
-        hNSigmPion_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, picoTrack->nSigmaPion());
-        hNSigmKaon_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, picoTrack->nSigmaKaon());
-        hNSigmProton_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, picoTrack->nSigmaProton());
-        hNSigmElectron_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, picoTrack->nSigmaElectron());
-        hdEdx_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,picoTrack->dEdx());
+        hNSigmPion_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaPion());
+        hNSigmKaon_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaKaon());
+        hNSigmProton_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaProton());
+        hNSigmElectron_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaElectron());
+        hdEdx_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,femtoTrack->dEdx());
 
-        h1_OverBeta_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,1./(trait->btofBeta()));
-        h1_OverBetaDelta_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, 1./(trait->btofBeta()) - one_beta_expect);
+        h1_OverBeta_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,1./(beta_TOF));
+        h1_OverBetaDelta_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, 1./(beta_TOF) - one_beta_expect);
         hm2_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,m_square);
         
         //let's fill c++ vector of Pions after TPC & TOF PID:
-        Double_t temp_pion_Energy_TOF_TPC = sqrt(picoTrack->pMom().Mag2()+m_Pion*m_Pion);
-        My_LorenzVector temp_four_vector(picoTrack->pMom().Px(), picoTrack->pMom().Py(),
-                              picoTrack->pMom().Pz(), temp_pion_Energy_TOF_TPC);
+        Double_t temp_pion_Energy_TOF_TPC = sqrt(femtoTrack->pMom().Mag2()+m_Pion*m_Pion);
+        My_LorenzVector temp_four_vector(femtoTrack->pMom().Px(), femtoTrack->pMom().Py(),
+                              femtoTrack->pMom().Pz(), temp_pion_Energy_TOF_TPC);
 
           My_ParticleTrackInfo temp_MyParticle;
           temp_MyParticle.p4 = temp_four_vector;
-          temp_MyParticle.topologyMap0 = picoTrack->topologyMap(0);
-          temp_MyParticle.topologyMap1 = picoTrack->topologyMap(1);
-          temp_MyParticle.iTpcTopologyMap = picoTrack->iTpcTopologyMap();
-          temp_MyParticle.Nhits = picoTrack->nHits();
-          temp_MyParticle.helix = picoTrack->helix( event->bField() );
+          temp_MyParticle.topologyMap0 = femtoTrack->map0();
+          temp_MyParticle.topologyMap1 = femtoTrack->map1();
+          temp_MyParticle.iTpcTopologyMap = femtoTrack->iTpcTopologyMap();
+          temp_MyParticle.Nhits = femtoTrack->nHits();
+          temp_MyParticle.helix = femtoTrack->helix( event->magneticField() );
 
         //separation to Pi+Pi+ & Pi-Pi- pairs
-        if (picoTrack->charge() > 0.)
+        if (femtoTrack->charge() > 0.)
         {
           Pions_Plus_4_momenta_hits_Arr_ALL.push_back(temp_MyParticle);
         }
-        else if (picoTrack->charge() < 0.)
+        else if (femtoTrack->charge() < 0.)
         {
           Pions_Minus_4_momenta_hits_Arr_ALL.push_back(temp_MyParticle);
         }
@@ -840,7 +844,7 @@ gRandom->SetSeed(42);
   Double_t max_hNFitHits = hNFitHits->GetMaximum();
   hNFitHits_cut->SetMaximum(max_hNFitHits);
 
-  picoReader->Finish();
+  femtoReader->Finish();
   oFile->Write();
   oFile->Close();
 
@@ -968,7 +972,7 @@ int TpcLocalTransform( TVector3& aPoint, int& aSector, int& aRow,
 
 
 //_________________
-void calculateTpcExitAndEntrancePoints(StPicoPhysicalHelix tHelix,
+void calculateTpcExitAndEntrancePoints(StFemtoPhysicalHelix tHelix,
                                        TVector3 PrimVert,
                                        TVector3 SecVert,
                                        TVector3 tmpTpcEntrancePoint,
@@ -996,7 +1000,7 @@ void calculateTpcExitAndEntrancePoints(StPicoPhysicalHelix tHelix,
   phase= tHelix.phase();
   h    = tHelix.h();
 
-  StPicoHelix hel(curv, dip, phase, ZeroVec, h);
+  StFemtoHelix hel(curv, dip, phase, ZeroVec, h);
 
   std::pair< double, double > candidates;
   // This is how much length to go to leave through sides of TPC
@@ -1304,7 +1308,7 @@ const float mMaxDuOuter = 1.4f;
 const float mMaxDzOuter = 3.2f;
 
 //_________________
-double fractionOfMergedRow(StPicoPhysicalHelix helixTrk1, StPicoPhysicalHelix helixTrk2) {
+double fractionOfMergedRow(StFemtoPhysicalHelix helixTrk1, StFemtoPhysicalHelix helixTrk2) {
 
   // Calculate merging factor for the pair in STAR TPC
   double tDu, tDz;

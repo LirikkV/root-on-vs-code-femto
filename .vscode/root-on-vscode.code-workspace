@@ -5,13 +5,13 @@
     },
     {
       "path": "../../Soft"
+    },
+    {
+      "path": "../.."
     }
   ],
   "settings": {
     "files.associations": {
-      "Program1.C": "cpp",
-      "Femt_1.C": "cpp",
-      "picoAnalyzerStandalone.C": "cpp",
       "cmath": "cpp",
       "iostream": "cpp",
       "ratio": "cpp",
@@ -79,9 +79,14 @@
       "typeinfo": "cpp",
       "merging.C": "cpp",
       "CF_3D.C": "cpp",
+      "femtoAnalyzerStandalone.C": "cpp",
+      "picoAnalyzerStandalone.C": "cpp"
     },
     "C_Cpp.default.includePath": [
-      "${default}"
+      "${default}",
+      "/home/kirill/Soft/root_v6.38.04.Linux-ubuntu24.04-x86_64-gcc13.3/root/include/",
+      "/home/kirill/Soft/StFemtoEvent",
+      "/home/kirill/Soft/StPicoEvent"
     ]
   },
   "extensions": {
