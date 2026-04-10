@@ -516,31 +516,35 @@ gRandom->SetSeed(42);
   TH1F *hFMR_B = new TH1F("FMR_B","Fraction of merged rows B;FMR;N",200,-1.,1);
   TH2F *hFMR_vs_qinv_A = new TH2F("FMR_vs_qinv_A","FMR vs q_inv A;q_inv;FMR", 400,-0.,0.2,200,-1.,1.);
   TH2F *hFMR_vs_qinv_B = new TH2F("FMR_vs_qinv","FMR vs q_inv B;q_inv;FMR", 400,-0.,0.2,200,-1.,1.);
+  //QA hist for Centralities
+  TH1I *hCentr = new TH1I("hCentr", "Centrality hist", 120, -2., 10.);
+
   //3D_CF Pi+Pi+, Pi-Pi-
   // For the nonazimuthal HBT analyses four kT bins were used: 
   // [0.15,0.25]GeV/c, [0.25,0.35] GeV/c, [0.35,0.45] GeV/c, [0.45,0.6] GeV/c.
-  Int_t N_hist_types = 3;
+
+  Int_t N_hist_types_3D = 3;
   Int_t N_Charge = 2;
   Int_t N_Bins_Kt = 4;
   Int_t N_Bins_Centr = 9; 
   
-  TH3F *h_Arr_3D[N_hist_types][N_Charge][N_Bins_Kt][N_Bins_Centr];
+  TH3F *h_Arr_3D[N_hist_types_3D][N_Charge][N_Bins_Kt][N_Bins_Centr];
 
-  TString hist_Name = "h_3D_";
-  TString hist_Title = "Hist_Title_Err";
+  TString hist_3D_Name = "h_3D";
+  TString hist_3D_Title = "Hist_Title_Err";
 
-  for (Int_t AB = 0; AB < N_hist_types; AB++) // AB - A or B or B_weighted
+  for (Int_t AB = 0; AB < N_hist_types_3D; AB++) // AB - A or B or B_weighted
   {
     switch (AB)
     {
     case 0:
-      hist_Title = "A ";
+      hist_3D_Title = "A ";
       break;
     case 1:
-      hist_Title = "B ";
+      hist_3D_Title = "B ";
       break;
     case 2:
-      hist_Title = "BW ";
+      hist_3D_Title = "BW ";
       break;
     }
     for (Int_t iCh = 0; iCh < N_Charge; iCh++)
@@ -549,17 +553,46 @@ gRandom->SetSeed(42);
       {
         for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
         {
-          h_Arr_3D[AB][iCh][iKt][iCent] = new TH3F(Form("%s_%i_%i_%i_%i",hist_Name.Data(),AB,iCh,iKt,iCent),
-                              hist_Title+Form("Charge %i, K_t %i, Centrality %i",iCh,iKt,iCent),
+          h_Arr_3D[AB][iCh][iKt][iCent] = new TH3F(Form("%s_%i_%i_%i_%i",hist_3D_Name.Data(),AB,iCh,iKt,iCent),
+                              hist_3D_Title+Form("Charge %i, K_t %i, Centrality %i",iCh,iKt,iCent),
                                       80,-0.4,0.4,80,-0.4,0.4,80,-0.4,0.4);
         }
       }
     }
   }
 
-  //QA hist for Centralities
-  TH1I *hCentr = new TH1I("hCentr", "Centrality hist",
-			    120, -2., 10.);
+  //1D hists with k_t & Centrality
+  Int_t N_hist_types_1D = 2; //A & B
+
+  TString hist_1D_Name = "h_1D_";
+  TString hist_1D_Title = "Hist_Title_Err";
+
+  TH1D *h_Arr_1D[N_hist_types_1D][N_Charge][N_Bins_Kt][N_Bins_Centr];
+  for (Int_t AB = 0; AB < N_hist_types_1D; AB++) // AB - A or B or B_weighted
+  {
+    switch (AB)
+    {
+    case 0:
+      hist_1D_Title = "A ";
+      break;
+    case 1:
+      hist_1D_Title = "B ";
+      break;
+    }
+    for(Int_t iCh=0;iCh<N_Charge;iCh++)
+    {
+      for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+      {
+        for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+        {
+          h_Arr_1D[AB][iCh][iKt][iCent] = new TH1D(hist_1D_Name + Form("%i_%i_%i_%i",AB,iCh,iKt,iCent),
+				                    hist_1D_Title + Form("Charge %i, Kt %i, Centrality %i",iCh,iKt,iCent),
+				                    300, 0., 3.0 );
+      }
+    }
+    }
+  }
+  
 
   //for mixing events:
   // Vz: 4 cuts; Vz from -40 to 40
@@ -568,6 +601,8 @@ gRandom->SetSeed(42);
   const Int_t nRefMultCuts = 10;
   const Double_t VzBins[nVzCuts+1] = {-40., -20., 0., 20., 40.};
   const Double_t RefMultBins[nRefMultCuts+1] = {0.,60.,120.,180.,240.,300.,360.,420.,480.,540.,600};
+  // [0.15,0.25]GeV/c, [0.25,0.35] GeV/c, [0.35,0.45] GeV/c, [0.45,0.6] GeV/c.
+  const Double_t KtBins[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.45,0.60}; //GeV/c
 
   
   const Int_t BUFFER_SIZE = 5;
