@@ -58,6 +58,7 @@
 // #include "StFemtoETofHit.h"
 #include "StFemtoEpdHit.h"
 #include "StFemtoPhysicalHelix.h"
+#include "StRefMultCorr.h"
 
 //It's better use ROOT::Math::LorentzVector instead of TLorenzVector
 const Double_t m_Pion = 0.13957039;//GeV
@@ -515,15 +516,60 @@ gRandom->SetSeed(42);
   TH1F *hFMR_B = new TH1F("FMR_B","Fraction of merged rows B;FMR;N",200,-1.,1);
   TH2F *hFMR_vs_qinv_A = new TH2F("FMR_vs_qinv_A","FMR vs q_inv A;q_inv;FMR", 400,-0.,0.2,200,-1.,1.);
   TH2F *hFMR_vs_qinv_B = new TH2F("FMR_vs_qinv","FMR vs q_inv B;q_inv;FMR", 400,-0.,0.2,200,-1.,1.);
+  //3D_CF Pi+Pi+, Pi-Pi-
+  // For the nonazimuthal HBT analyses four kT bins were used: 
+  // [0.15,0.25]GeV/c, [0.25,0.35] GeV/c, [0.35,0.45] GeV/c, [0.45,0.6] GeV/c.
+  Int_t N_hist_types = 3;
+  Int_t N_Charge = 2;
+  Int_t N_Bins_Kt = 4;
+  Int_t N_Bins_Centr = 9; 
+  
+  TH3F *h_Arr_3D[N_hist_types][N_Charge][N_Bins_Kt][N_Bins_Centr];
 
-  //cuts by Vz: 4 cats; Vz from -40 to 40
-  //cuts by refMult: 10 cuts; RefMult from 0 to 600
+  TString hist_Name = "h_3D_";
+  TString hist_Title = "Hist_Title_Err";
+
+  for (Int_t AB = 0; AB < N_hist_types; AB++) // AB - A or B or B_weighted
+  {
+    switch (AB)
+    {
+    case 0:
+      hist_Title = "A ";
+      break;
+    case 1:
+      hist_Title = "B ";
+      break;
+    case 2:
+      hist_Title = "BW ";
+      break;
+    }
+    for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+    {
+      for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+      {
+        for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+        {
+          h_Arr_3D[AB][iCh][iKt][iCent] = new TH3F(Form("%s_%i_%i_%i_%i",hist_Name.Data(),AB,iCh,iKt,iCent),
+                              hist_Title+Form("Charge %i, K_t %i, Centrality %i",iCh,iKt,iCent),
+                                      80,-0.4,0.4,80,-0.4,0.4,80,-0.4,0.4);
+        }
+      }
+    }
+  }
+
+  //QA hist for Centralities
+  TH1I *hCentr = new TH1I("hCentr", "Centrality hist",
+			    120, -2., 10.);
+
+  //for mixing events:
+  // Vz: 4 cuts; Vz from -40 to 40
+  // refMult: 10 cuts; RefMult from 0 to 600
   const Int_t nVzCuts = 4;
   const Int_t nRefMultCuts = 10;
   const Double_t VzBins[nVzCuts+1] = {-40., -20., 0., 20., 40.};
-  const Double_t RefMultBins[nRefMultCuts+1] = {0.,60.,120.,180.,240.,300.,360.,420.,440.,465.9,600};
+  const Double_t RefMultBins[nRefMultCuts+1] = {0.,60.,120.,180.,240.,300.,360.,420.,480.,540.,600};
 
-  //for mixing events:
+  
   const Int_t BUFFER_SIZE = 5;
   //this is queue from events; just queue from vectors from 4-vectors and hits information of particle's track
   std::vector<std::vector<std::deque<std::vector<My_ParticleTrackInfo>>>> Pions_Plus_Buffer(
@@ -538,6 +584,10 @@ gRandom->SetSeed(42);
   //let's create a c++ vector with 4-momenta of pions in one event:
   std::vector<My_ParticleTrackInfo> Pions_Plus_4_momenta_hits_Arr_ALL;
   std::vector<My_ParticleTrackInfo> Pions_Minus_4_momenta_hits_Arr_ALL;
+
+  //For centrality:
+  StRefMultCorr *mRefMultCorrUtil = new StRefMultCorr("refmult");
+  mRefMultCorrUtil->setVerbose(kFALSE);
 
   // Loop over events
   for(Long64_t iEvent=0; iEvent<events2read; iEvent++) {
@@ -579,12 +629,27 @@ gRandom->SetSeed(42);
     double_t Vtx_r_Max = 2.0;  // cm
     double_t Vtx_z_Max = 40.0; // cm
 
+    //Centrality:
+    Int_t runId = event->runId();
+    mRefMultCorrUtil->init(runId);
+        if ( mRefMultCorrUtil->isBadRun( runId ) ) {
+      continue;
+    }
+    mRefMultCorrUtil->initEvent(event->refMult(), pVtx.Z());
+    if (mRefMultCorrUtil->getCentralityBin9() < 0) {
+      continue;
+    }
+    Int_t cent9 = mRefMultCorrUtil->getCentralityBin9(); 
+    // if(cent9==8 || cent9==7)
+    // {
+    // std::cout<<cent9<< "  "<<event->refMult()<<std::endl;
+    // }
+    hCentr->Fill(cent9);
+
     // Event selection:
     Bool_t is_Vtx_r_cut = pVtx.Perp() < Vtx_r_Max;
     Bool_t is_abs_Vtx_z_cut = fabs(pVtx.Z()) < Vtx_z_Max;
-    //nev window:
-    Bool_t is_Ref_mult_466 = event->refMult() >466;
-    if(!is_Ref_mult_466) {continue;}
+
     if (is_Vtx_r_cut && is_abs_Vtx_z_cut)
     {
       //QA hists after event cut:
