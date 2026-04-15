@@ -516,14 +516,13 @@ gRandom->SetSeed(42);
   TH1F *hFMR_B = new TH1F("FMR_B","Fraction of merged rows B;FMR;N",200,-1.,1);
   TH2F *hFMR_vs_qinv_A = new TH2F("FMR_vs_qinv_A","FMR vs q_inv A;q_inv;FMR", 400,-0.,0.2,200,-1.,1.);
   TH2F *hFMR_vs_qinv_B = new TH2F("FMR_vs_qinv","FMR vs q_inv B;q_inv;FMR", 400,-0.,0.2,200,-1.,1.);
-  //QA hist for Centralities
+
+  //hist for Centralities
   TH1I *hCentr = new TH1I("hCentr", "Centrality hist", 120, -2., 10.);
 
   //3D_CF Pi+Pi+, Pi-Pi-
-  // For the nonazimuthal HBT analyses four kT bins were used: 
-  // [0.15,0.25]GeV/c, [0.25,0.35] GeV/c, [0.35,0.45] GeV/c, [0.45,0.6] GeV/c.
 
-  Int_t N_hist_types_3D = 3;
+  Int_t N_hist_types_3D = 3; // A or B or B_weighted
   Int_t N_Charge = 2;
   Int_t N_Bins_Kt = 4;
   Int_t N_Bins_Centr = 9; 
@@ -562,13 +561,13 @@ gRandom->SetSeed(42);
   }
 
   //1D hists with k_t & Centrality
-  Int_t N_hist_types_1D = 2; //A & B
+  Int_t N_hist_types_1D = 2; //A or B
 
   TString hist_1D_Name = "h_1D_";
   TString hist_1D_Title = "Hist_Title_Err";
 
   TH1D *h_Arr_1D[N_hist_types_1D][N_Charge][N_Bins_Kt][N_Bins_Centr];
-  for (Int_t AB = 0; AB < N_hist_types_1D; AB++) // AB - A or B or B_weighted
+  for (Int_t AB = 0; AB < N_hist_types_1D; AB++) // AB - A or B
   {
     switch (AB)
     {
@@ -601,9 +600,10 @@ gRandom->SetSeed(42);
   const Int_t nRefMultCuts = 10;
   const Double_t VzBins[nVzCuts+1] = {-40., -20., 0., 20., 40.};
   const Double_t RefMultBins[nRefMultCuts+1] = {0.,60.,120.,180.,240.,300.,360.,420.,480.,540.,600};
-  // [0.15,0.25]GeV/c, [0.25,0.35] GeV/c, [0.35,0.45] GeV/c, [0.45,0.6] GeV/c.
-  const Double_t KtBins[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.45,0.60}; //GeV/c
 
+  // // [0.15,0.25]GeV/c, [0.25,0.35] GeV/c, [0.35,0.45] GeV/c, [0.45,0.6] GeV/c.
+  // const Double_t KtBins[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.45,0.60}; //GeV/c
+  
   
   const Int_t BUFFER_SIZE = 5;
   //this is queue from events; just queue from vectors from 4-vectors and hits information of particle's track
