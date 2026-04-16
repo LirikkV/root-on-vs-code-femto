@@ -64,6 +64,25 @@
 const Double_t m_Pion = 0.13957039;//GeV
 using My_LorenzVector = ROOT::Math::PxPyPzEVector;
 
+  //for mixing events:
+  // Vz: 4 cuts; Vz from -40 to 40
+  // refMult: 10 cuts; RefMult from 0 to 600
+  const Int_t N_hist_types_3D = 3; // A or B or B_weighted
+  const Int_t N_hist_types_1D = 2; //A or B
+  const Int_t N_Charge = 2; // 0 <-> Pi_Plus; 1 <-> Pi_Minus
+  const Int_t N_Bins_Kt = 4;
+  const Int_t N_Bins_Centr = 9; 
+  const Int_t nVzCuts = 4;
+  const Int_t nRefMultCuts = 10;
+  const Double_t VzBins[nVzCuts+1] = {-40., -20., 0., 20., 40.};
+  const Double_t RefMultBins[nRefMultCuts+1] = {0.,60.,120.,180.,240.,300.,360.,420.,480.,540.,600};
+
+  // // [0.15,0.25]GeV/c, [0.25,0.35] GeV/c, [0.35,0.45] GeV/c, [0.45,0.6] GeV/c.
+  const Double_t KtBins[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.60}; //GeV/c
+  const Int_t CentrBins[N_Bins_Centr+1] = {0,1,2,3,4,5,6,7,8}; // 0 - less central; 8 - most central
+  
+  const Int_t BUFFER_SIZE = 5;
+
 struct My_ParticleTrackInfo{
   My_LorenzVector p4;
   UInt_t topologyMap0;
@@ -154,7 +173,10 @@ double fractionOfMergedRow(StFemtoPhysicalHelix helixTrk1, StFemtoPhysicalHelix 
 
 void fill_A_qinv(const std::vector<My_ParticleTrackInfo>& Pions_4_momenta_hits_Arr, TH1D* hist_A, TH2F* hSL_A, 
                   TH1F* hFMR_A, TH2F *hFMR_vs_qinv_A,
-                  TH3F* histA_osl)
+                  TH3F* histA_osl,  
+                  const std::array<std::array<std::array<std::array<TH1D*,N_Bins_Kt>,N_Bins_Centr>,N_Charge>,N_hist_types_1D>& h_Arr_1D, 
+                  const std::array<std::array<std::array<std::array<TH3F*,N_Bins_Kt>,N_Bins_Centr>,N_Charge>, N_hist_types_3D>& h_Arr_3D,
+                  const Int_t& i_Charge,const Int_t& i_Centr)
 {
   if(!Pions_4_momenta_hits_Arr.empty())
     {
@@ -172,9 +194,10 @@ void fill_A_qinv(const std::vector<My_ParticleTrackInfo>& Pions_4_momenta_hits_A
           double SplitLevel = getSplitLevel(Pions_4_momenta_hits_Arr[j],Pions_4_momenta_hits_Arr[i]);
           if(SplitLevel>maxSplitLevel)continue; //if SplitLevel is wery high - we stop iteration and get to next step over j
           //FMR check:
-          // double FMR = fractionOfMergedRow(Pions_4_momenta_hits_Arr[j].helix,Pions_4_momenta_hits_Arr[i].helix);
-          // hFMR_A->Fill(FMR);
-          // if(FMR>FMR_max) continue;
+          double FMR = fractionOfMergedRow(Pions_4_momenta_hits_Arr[j].helix,Pions_4_momenta_hits_Arr[i].helix);
+          if(FMR>FMR_max) continue;
+          hFMR_A->Fill(FMR);
+
           double px2 =  Pions_4_momenta_hits_Arr[j].p4.Px();
           double py2 = Pions_4_momenta_hits_Arr[j].p4.Py();
           double pz2 = Pions_4_momenta_hits_Arr[j].p4.Pz();
@@ -197,15 +220,29 @@ void fill_A_qinv(const std::vector<My_ParticleTrackInfo>& Pions_4_momenta_hits_A
           // std::cout<<getSplitLevel(Pions_4_momenta_hits_Arr[j],Pions_4_momenta_hits_Arr[i])<<std::endl;
           // std::cout<<Pions_4_momenta_hits_Arr[j].Nhits<<" "<< Pions_4_momenta_hits_Arr[i].Nhits<<std::endl;
           double q_inv_2 = q[0];
-          if(q_inv_2 > 0.)
+          if (q_inv_2 < 0.)
           {
-            double q_inv = sqrt(q_inv_2);
-            hSL_A->Fill(q_inv, SplitLevel);
-            hist_A->Fill(q_inv);
-            //hFMR_vs_qinv_A->Fill(q_inv,FMR);
+            std::cout << "ERROR: q_inv^2<0" << std::endl;
+            exit(0);
           }
+          double q_inv = sqrt(q_inv_2);
+          hSL_A->Fill(q_inv, SplitLevel);
+          hist_A->Fill(q_inv);
+          hFMR_vs_qinv_A->Fill(q_inv,FMR);
 
           histA_osl->Fill(q[1],q[2],q[3]);//q_out,q_side,q_long
+
+          double Kt = sqrt( (px1+px2)*(px1+px2) + (py1+py2)*(py1+py2)) /2.;
+          Int_t i_kt_Bin= TMath::BinarySearch(N_Bins_Kt +1, KtBins, Kt);
+          if(i_kt_Bin<0 || i_kt_Bin > N_Bins_Kt-1)
+          {
+            continue;
+          }
+
+
+          h_Arr_1D[0][i_Charge][i_Centr][i_kt_Bin]->Fill(q_inv_2);
+          h_Arr_3D[0][i_Charge][i_Centr][i_kt_Bin]->Fill(q[1],q[2],q[3]);
+
 
         }
       }
@@ -215,7 +252,10 @@ void fill_A_qinv(const std::vector<My_ParticleTrackInfo>& Pions_4_momenta_hits_A
 void comparePionsFillHistB(const std::vector<My_ParticleTrackInfo>& new_Pions_Arr,
                            const std::deque<std::vector<My_ParticleTrackInfo>>& event_Queue,
                            TH1D* hist_B, TH2F* hSL_B, TH1F* hFMR_B, TH2F* hFMR_vs_qinv_B,
-                           TH3F* hist_B_osl)
+                           TH3F* hist_B_osl,
+                           const std::array<std::array<std::array<std::array<TH1D*,N_Bins_Kt>,N_Bins_Centr>,N_Charge>,N_hist_types_1D>& h_Arr_1D, 
+                           const std::array<std::array<std::array<std::array<TH3F*,N_Bins_Kt>,N_Bins_Centr>,N_Charge>, N_hist_types_3D>& h_Arr_3D,
+                           const Int_t& i_Charge,const Int_t& i_Centr)
 {
   const size_t nNewPions = new_Pions_Arr.size();
   const size_t nEventsInQueue = event_Queue.size();
@@ -241,9 +281,9 @@ void comparePionsFillHistB(const std::vector<My_ParticleTrackInfo>& new_Pions_Ar
         double SplitLevel = getSplitLevel(new_Pions_Arr[j],queue_Pions_Arr[k]);
         if(SplitLevel>maxSplitLevel)continue;
         //FMR check:
-        // double FMR = fractionOfMergedRow(new_Pions_Arr[j].helix, queue_Pions_Arr[k].helix);
-        // hFMR_B->Fill(FMR);
-        // if(FMR>FMR_max) continue;
+        double FMR = fractionOfMergedRow(new_Pions_Arr[j].helix, queue_Pions_Arr[k].helix);
+        if(FMR>FMR_max) continue;
+        hFMR_B->Fill(FMR);
 
         double px2 =  queue_Pions_Arr[k].p4.Px();
         double py2 = queue_Pions_Arr[k].p4.Py();
@@ -255,15 +295,32 @@ void comparePionsFillHistB(const std::vector<My_ParticleTrackInfo>& new_Pions_Ar
 
 
         double q_inv_2 = q[0];
-        if(q_inv_2>0.)
+        if(q_inv_2<0.)
         {
+          std::cout<<"ERROR: q_inv^2<0"<<std::endl;
+          exit(0);
+        }
         double_t q_inv = sqrt(q_inv_2);
         hSL_B->Fill(q_inv, SplitLevel);
         hist_B->Fill(q_inv);
-        //hFMR_vs_qinv_B->Fill(q_inv,FMR);
-        }
+        hFMR_vs_qinv_B->Fill(q_inv,FMR);
+        
 
         hist_B_osl->Fill(q[1],q[2],q[3]);
+
+        double Kt = sqrt( (px1+px2)*(px1+px2) + (py1+py2)*(py1+py2)) /2.;
+        Int_t i_kt_Bin= TMath::BinarySearch(N_Bins_Kt +1, KtBins, Kt);
+
+        if(i_kt_Bin<0 || i_kt_Bin > N_Bins_Kt-1)
+        {
+          continue;
+        }
+
+        h_Arr_1D[1][i_Charge][i_Centr][i_kt_Bin]->Fill(q_inv_2);
+        h_Arr_3D[1][i_Charge][i_Centr][i_kt_Bin]->Fill(q[1],q[2],q[3]);
+
+        h_Arr_3D[2][i_Charge][i_Centr][i_kt_Bin]->Fill(q[1],q[2],q[3],q_inv); //B - weighted
+        
       }
     }
   }
@@ -522,13 +579,9 @@ gRandom->SetSeed(42);
 
   //3D_CF Pi+Pi+, Pi-Pi-
 
-  Int_t N_hist_types_3D = 3; // A or B or B_weighted
-  Int_t N_Charge = 2;
-  Int_t N_Bins_Kt = 4;
-  Int_t N_Bins_Centr = 9; 
   
-  TH3F *h_Arr_3D[N_hist_types_3D][N_Charge][N_Bins_Kt][N_Bins_Centr];
-
+  
+  std::array<std::array<std::array<std::array<TH3F*,N_Bins_Kt>,N_Bins_Centr>,N_Charge>, N_hist_types_3D> h_Arr_3D = {}; 
   TString hist_3D_Name = "h_3D";
   TString hist_3D_Title = "Hist_Title_Err";
 
@@ -552,21 +605,24 @@ gRandom->SetSeed(42);
       {
         for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
         {
-          h_Arr_3D[AB][iCh][iKt][iCent] = new TH3F(Form("%s_%i_%i_%i_%i",hist_3D_Name.Data(),AB,iCh,iKt,iCent),
-                              hist_3D_Title+Form("Charge %i, K_t %i, Centrality %i",iCh,iKt,iCent),
+          h_Arr_3D[AB][iCh][iCent][iKt] = new TH3F(Form("%s_%i_%i_%i_%i",hist_3D_Name.Data(),AB,iCh,iCent,iKt),
+                              hist_3D_Title+Form("Charge %i, K_t %i, Centrality %i",iCh,iCent,iKt),
                                       80,-0.4,0.4,80,-0.4,0.4,80,-0.4,0.4);
+          // h_Arr_3D[AB][iCh][iCent][iKt] = new TH3F(Form("%s_%i_%i_%i_%i",hist_3D_Name.Data(),AB,iCh,iCent,iKt),
+          //                     hist_3D_Title+Form("Charge %i, K_t %i, Centrality %i",iCh,iCent,iKt),
+          //                             80,-0.4,0.4,80,-0.4,0.4,80,-0.4,0.4); - 15 april 
         }
       }
     }
   }
 
   //1D hists with k_t & Centrality
-  Int_t N_hist_types_1D = 2; //A or B
+
 
   TString hist_1D_Name = "h_1D_";
   TString hist_1D_Title = "Hist_Title_Err";
 
-  TH1D *h_Arr_1D[N_hist_types_1D][N_Charge][N_Bins_Kt][N_Bins_Centr];
+  std::array<std::array<std::array<std::array<TH1D*,N_Bins_Kt>,N_Bins_Centr>,N_Charge>, N_hist_types_1D> h_Arr_1D = {}; //h_Arr_1D[N_hist_types_1D][][][N_Bins_Kt]
   for (Int_t AB = 0; AB < N_hist_types_1D; AB++) // AB - A or B
   {
     switch (AB)
@@ -584,37 +640,22 @@ gRandom->SetSeed(42);
       {
         for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
         {
-          h_Arr_1D[AB][iCh][iKt][iCent] = new TH1D(hist_1D_Name + Form("%i_%i_%i_%i",AB,iCh,iKt,iCent),
-				                    hist_1D_Title + Form("Charge %i, Kt %i, Centrality %i",iCh,iKt,iCent),
+          h_Arr_1D[AB][iCh][iCent][iKt] = new TH1D(hist_1D_Name + Form("%i_%i_%i_%i",AB,iCh,iCent,iKt),
+				                    hist_1D_Title + Form("Charge %i, Kt %i, Centrality %i",iCh,iCent,iKt),
 				                    300, 0., 3.0 );
       }
     }
     }
   }
   
-
-  //for mixing events:
-  // Vz: 4 cuts; Vz from -40 to 40
-  // refMult: 10 cuts; RefMult from 0 to 600
-  const Int_t nVzCuts = 4;
-  const Int_t nRefMultCuts = 10;
-  const Double_t VzBins[nVzCuts+1] = {-40., -20., 0., 20., 40.};
-  const Double_t RefMultBins[nRefMultCuts+1] = {0.,60.,120.,180.,240.,300.,360.,420.,480.,540.,600};
-
-  // // [0.15,0.25]GeV/c, [0.25,0.35] GeV/c, [0.35,0.45] GeV/c, [0.45,0.6] GeV/c.
-  // const Double_t KtBins[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.45,0.60}; //GeV/c
-  
-  
-  const Int_t BUFFER_SIZE = 5;
   //this is queue from events; just queue from vectors from 4-vectors and hits information of particle's track
   std::vector<std::vector<std::deque<std::vector<My_ParticleTrackInfo>>>> Pions_Plus_Buffer(
                                           nVzCuts, 
-                                          std::vector<std::deque<std::vector<My_ParticleTrackInfo>>>(nRefMultCuts));
+                                          std::vector<std::deque<std::vector<My_ParticleTrackInfo>>>(N_Bins_Centr));
                                           //this is 4*10 queues; each queue consists from events; just 2D vector of previous queues for each cut
   std::vector<std::vector<std::deque<std::vector<My_ParticleTrackInfo>>>> Pions_Minus_Buffer(
                                           nVzCuts, 
-                                          std::vector<std::deque<std::vector<My_ParticleTrackInfo>>>(nRefMultCuts));
-  
+                                          std::vector<std::deque<std::vector<My_ParticleTrackInfo>>>(N_Bins_Centr));
 
   //let's create a c++ vector with 4-momenta of pions in one event:
   std::vector<My_ParticleTrackInfo> Pions_Plus_4_momenta_hits_Arr_ALL;
@@ -626,11 +667,11 @@ gRandom->SetSeed(42);
 
   // Loop over events
   for(Long64_t iEvent=0; iEvent<events2read; iEvent++) {
-    if(iEvent%1000==0)
-    {
+    // if(iEvent%1000==0)
+    // {
     std::cout << "Working on event #[" << (iEvent+1)
 	      << "/" << events2read << "]" << std::endl;
-    }
+    // }
     Bool_t readEvent = femtoReader->readFemtoEvent(iEvent);
     if( !readEvent ) {
       std::cout << "Something went wrong, Master! Nothing to analyze..."
@@ -898,8 +939,10 @@ gRandom->SetSeed(42);
 
     //now let's build A(q_inv) - Numerator of correlation function (Pions from one event):
     //for Pi+Pi+ & Pi-Pi- pairs:
-    fill_A_qinv(Pions_Plus_4_momenta_hits_Arr_ALL,hA_Pi_Plus_q_inv_ALL,hSL_A,hFMR_A, hFMR_vs_qinv_A,hA_Pi_Plus_q_osl);
-    fill_A_qinv(Pions_Minus_4_momenta_hits_Arr_ALL,hA_Pi_Minus_q_inv_ALL,hSL_A,hFMR_A, hFMR_vs_qinv_A,hA_Pi_Minus_q_osl);
+    fill_A_qinv(Pions_Plus_4_momenta_hits_Arr_ALL,hA_Pi_Plus_q_inv_ALL,hSL_A,hFMR_A, hFMR_vs_qinv_A,hA_Pi_Plus_q_osl,
+                h_Arr_1D,h_Arr_3D,0,cent9);
+    fill_A_qinv(Pions_Minus_4_momenta_hits_Arr_ALL,hA_Pi_Minus_q_inv_ALL,hSL_A,hFMR_A, hFMR_vs_qinv_A,hA_Pi_Minus_q_osl,
+                h_Arr_1D,h_Arr_3D,1,cent9);
 
 
     //let's mix events:
@@ -912,27 +955,29 @@ gRandom->SetSeed(42);
     Int_t iRefM = TMath::BinarySearch(nRefMultCuts +1, RefMultBins, (Double_t)event->refMult());
 
     //check indexies for preventing segmentation fault:
-    if(iVz>=0 && iVz<nVzCuts && iRefM>=0 && iRefM<nRefMultCuts)
+    if(iVz>=0 && iVz<nVzCuts && cent9>=0 && cent9<N_Bins_Centr)
     {
 
       // compare new vector of pions and all vectors of pions in qeue:
       // for Pi+Pi+ & Pi-Pi- pions:
-      comparePionsFillHistB(Pions_Plus_4_momenta_hits_Arr_ALL, Pions_Plus_Buffer[iVz][iRefM], 
-                            hB_Pi_Plus_q_inv_ALL,hSL_B,hFMR_B,hFMR_vs_qinv_B,hB_Pi_Plus_q_osl);
-      comparePionsFillHistB(Pions_Minus_4_momenta_hits_Arr_ALL, Pions_Minus_Buffer[iVz][iRefM], 
-                            hB_Pi_Minus_q_inv_ALL,hSL_B,hFMR_B,hFMR_vs_qinv_B,hB_Pi_Minus_q_osl);
+      comparePionsFillHistB(Pions_Plus_4_momenta_hits_Arr_ALL, Pions_Plus_Buffer[iVz][cent9], 
+                            hB_Pi_Plus_q_inv_ALL,hSL_B,hFMR_B,hFMR_vs_qinv_B,hB_Pi_Plus_q_osl,
+                            h_Arr_1D,h_Arr_3D,0,cent9);
+      comparePionsFillHistB(Pions_Minus_4_momenta_hits_Arr_ALL, Pions_Minus_Buffer[iVz][cent9], 
+                            hB_Pi_Minus_q_inv_ALL,hSL_B,hFMR_B,hFMR_vs_qinv_B,hB_Pi_Minus_q_osl,
+                            h_Arr_1D,h_Arr_3D,1,cent9);
 
-      Pions_Plus_Buffer[iVz][iRefM].push_back(Pions_Plus_4_momenta_hits_Arr_ALL);
-      Pions_Minus_Buffer[iVz][iRefM].push_back(Pions_Minus_4_momenta_hits_Arr_ALL);
+      Pions_Plus_Buffer[iVz][cent9].push_back(Pions_Plus_4_momenta_hits_Arr_ALL);
+      Pions_Minus_Buffer[iVz][cent9].push_back(Pions_Minus_4_momenta_hits_Arr_ALL);
 
       // clear buffer:
-      if (Pions_Plus_Buffer[iVz][iRefM].size() > BUFFER_SIZE)
+      if (Pions_Plus_Buffer[iVz][cent9].size() > BUFFER_SIZE)
       {
-        Pions_Plus_Buffer[iVz][iRefM].pop_front(); // delete the oldest element
+        Pions_Plus_Buffer[iVz][cent9].pop_front(); // delete the oldest element
       }
-      if (Pions_Minus_Buffer[iVz][iRefM].size() > BUFFER_SIZE)
+      if (Pions_Minus_Buffer[iVz][cent9].size() > BUFFER_SIZE)
       {
-        Pions_Minus_Buffer[iVz][iRefM].pop_front(); // delete the oldest element
+        Pions_Minus_Buffer[iVz][cent9].pop_front(); // delete the oldest element
       }
     }
 

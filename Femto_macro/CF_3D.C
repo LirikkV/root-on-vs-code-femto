@@ -9,10 +9,15 @@
 #include <iostream>
 using namespace::std;
 
+const Int_t N_hist_types_3D = 3; // A or B or B_weighted
+const Int_t N_hist_types_1D = 2; //A or B
+const Int_t N_Charge = 2; // 0 <-> Pi_Plus; 1 <-> Pi_Minus
+const Int_t N_Bins_Kt = 4;
+const Int_t N_Bins_Centr = 9; 
 
 void CF_3D()
 {
-TFile *f = TFile::Open("/home/kirill/root-on-vs-code/Femto_macro/Output_file_1.root", "READ");
+TFile *f = TFile::Open("/home/kirill/root-on-vs-code/Femto_output/out_AuAu200_2011.root", "READ");
 //for Pi+Pi+:
 TH1D *hA_Plus = (TH1D*)f->Get("hA_Pi_Plus_q_inv_ALL");
 TH1D *hB_Plus = (TH1D*)f->Get("hB_Pi_Plus_q_inv_ALL");
@@ -27,6 +32,23 @@ TH1D *hB_Minus = (TH1D*)f->Get("hB_Pi_Minus_q_inv_ALL");
 TH3F *hA_osl_Minus = (TH3F*)f->Get("hA_Pi_Minus_q_osl");
 TH3F *hB_osl_Minus = (TH3F*)f->Get("hB_Pi_Minus_q_osl");
 
+//osl 1D:
+std::array<std::array<std::array<std::array<TH1D*,N_Bins_Kt>,N_Bins_Centr>,N_Charge>, N_hist_types_1D> h_Arr_1D = {};
+
+TString hist_1D_Name = "h_1D_";
+
+
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+            h_Arr_1D[0][iCh][iCent][iKt] = (TH1D *)f->Get(hist_1D_Name + Form("%i_%i_%i_%i",0,iCh,iCent,iKt));
+            h_Arr_1D[1][iCh][iCent][iKt] = (TH1D *)f->Get(hist_1D_Name + Form("%i_%i_%i_%i",1,iCh,iCent,iKt));
+        }
+    }
+}
 
 //!!! WARNING NEXT STRINGSs are NECECERY:
 hA_Plus->Sumw2();
@@ -38,12 +60,39 @@ hB_osl_Plus->Sumw2();
 hA_osl_Minus->Sumw2();
 hB_osl_Minus->Sumw2();
 
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+            h_Arr_1D[0][iCh][iCent][iKt]->Sumw2();
+            h_Arr_1D[1][iCh][iCent][iKt]->Sumw2();
+        }
+    }
+}
 
 TH1D *CF_Pi_Plus_non_nrom = (TH1D*)hA_Plus->Clone("CF_Pi_Plus_non_normalized");
 CF_Pi_Plus_non_nrom->Divide(hB_Plus);
 CF_Pi_Plus_non_nrom->SetTitle("Corr.Funct Pi+ Pi+ A/B - non normalized");
 CF_Pi_Plus_non_nrom->GetXaxis()->SetTitle("q_inv");
 CF_Pi_Plus_non_nrom->GetYaxis()->SetTitle("CF");
+
+std::array<std::array<std::array<TH1D*,N_Bins_Kt>,N_Bins_Centr>,N_Charge> h_CF_1D_non_norm = {};
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+            h_CF_1D_non_norm[iCh][iCent][iKt] = (TH1D*)h_Arr_1D[0][iCh][iCent][iKt]->Clone(Form("CF_1D_non_norm_%i_%i_%i",iCh,iCent,iKt) );
+            h_CF_1D_non_norm[iCh][iCent][iKt]->Divide(h_Arr_1D[1][iCh][iCent][iKt]);
+            h_CF_1D_non_norm[iCh][iCent][iKt]->SetTitle(Form("CF_1D_non_norm Charge: %i Centrality: %i K_t: %i",iCh,iCent,iKt));
+            h_CF_1D_non_norm[iCh][iCent][iKt]->GetXaxis()->SetTitle("q_inv");
+            h_CF_1D_non_norm[iCh][iCent][iKt]->GetYaxis()->SetTitle("CF");
+        }
+    }
+}
 
 
 //let's normalize CF:
@@ -169,7 +218,7 @@ CF_Pi_Plus_long_Project_first_non_norm->GetYaxis()->SetTitle("CF");
 
 
 
-TFile *f_out = new TFile("/home/kirill/root-on-vs-code/Femto_macro/Output_file_1_pr.root", "RECREATE");
+TFile *f_out = new TFile("/home/kirill/root-on-vs-code/Femto_output/out_AuAu200_2011_pr.root", "RECREATE");
 CF_Pi_Plus_non_nrom->Write();
 CF_Pi_Plus->Write();
 CF_Pi_Minus_Meth_1->Write();
@@ -189,6 +238,17 @@ hA_Plus_long->Write();
 hB_Plus_long->Write();
 CF_Pi_Plus_long_Project_first_non_norm->Write();
 //CF_Pi_Plus_long_3D_first_non_norm->Write();
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+            h_CF_1D_non_norm[iCh][iCent][iKt]->Write();
+        }
+    }
+}
+
 
 //normalize CF:
 double q_min_osl =0.15;
