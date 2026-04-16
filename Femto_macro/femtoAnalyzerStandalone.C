@@ -240,7 +240,7 @@ void fill_A_qinv(const std::vector<My_ParticleTrackInfo>& Pions_4_momenta_hits_A
           }
 
 
-          h_Arr_1D[0][i_Charge][i_Centr][i_kt_Bin]->Fill(q_inv_2);
+          h_Arr_1D[0][i_Charge][i_Centr][i_kt_Bin]->Fill(q_inv);
           h_Arr_3D[0][i_Charge][i_Centr][i_kt_Bin]->Fill(q[1],q[2],q[3]);
 
 
@@ -316,7 +316,7 @@ void comparePionsFillHistB(const std::vector<My_ParticleTrackInfo>& new_Pions_Ar
           continue;
         }
 
-        h_Arr_1D[1][i_Charge][i_Centr][i_kt_Bin]->Fill(q_inv_2);
+        h_Arr_1D[1][i_Charge][i_Centr][i_kt_Bin]->Fill(q_inv);
         h_Arr_3D[1][i_Charge][i_Centr][i_kt_Bin]->Fill(q[1],q[2],q[3]);
 
         h_Arr_3D[2][i_Charge][i_Centr][i_kt_Bin]->Fill(q[1],q[2],q[3],q_inv); //B - weighted
@@ -606,7 +606,7 @@ gRandom->SetSeed(42);
         for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
         {
           h_Arr_3D[AB][iCh][iCent][iKt] = new TH3F(Form("%s_%i_%i_%i_%i",hist_3D_Name.Data(),AB,iCh,iCent,iKt),
-                              hist_3D_Title+Form("Charge %i, K_t %i, Centrality %i",iCh,iCent,iKt),
+                              hist_3D_Title+Form("Charge %i, Centrality %i, K_t %i",iCh,iCent,iKt),
                                       80,-0.4,0.4,80,-0.4,0.4,80,-0.4,0.4);
           // h_Arr_3D[AB][iCh][iCent][iKt] = new TH3F(Form("%s_%i_%i_%i_%i",hist_3D_Name.Data(),AB,iCh,iCent,iKt),
           //                     hist_3D_Title+Form("Charge %i, K_t %i, Centrality %i",iCh,iCent,iKt),
@@ -641,7 +641,7 @@ gRandom->SetSeed(42);
         for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
         {
           h_Arr_1D[AB][iCh][iCent][iKt] = new TH1D(hist_1D_Name + Form("%i_%i_%i_%i",AB,iCh,iCent,iKt),
-				                    hist_1D_Title + Form("Charge %i, Kt %i, Centrality %i",iCh,iCent,iKt),
+				                    hist_1D_Title + Form("Charge %i,Centrality %i,Kt %i",iCh,iCent,iKt),
 				                    300, 0., 3.0 );
       }
     }
