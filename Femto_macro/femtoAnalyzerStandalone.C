@@ -667,11 +667,11 @@ gRandom->SetSeed(42);
 
   // Loop over events
   for(Long64_t iEvent=0; iEvent<events2read; iEvent++) {
-    // if(iEvent%1000==0)
-    // {
+    if(iEvent%1000==0)
+    {
     std::cout << "Working on event #[" << (iEvent+1)
 	      << "/" << events2read << "]" << std::endl;
-    // }
+    }
     Bool_t readEvent = femtoReader->readFemtoEvent(iEvent);
     if( !readEvent ) {
       std::cout << "Something went wrong, Master! Nothing to analyze..."

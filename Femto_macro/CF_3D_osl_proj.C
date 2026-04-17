@@ -51,23 +51,23 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
     }
 }
 
-//!!! WARNING NEXT STRINGSs are NECECERY:
-for (Int_t iCh = 0; iCh < N_Charge; iCh++)
-{
-    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
-    {
-        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
-        {
-            //3D:
-            h_Arr_3D[0][iCh][iCent][iKt]->Sumw2();
-            h_Arr_3D[1][iCh][iCent][iKt]->Sumw2();
-            h_Arr_3D[2][iCh][iCent][iKt]->Sumw2();
-        }
-    }
-}
+// //!!! WARNING NEXT STRINGSs are NECECERY:
+// for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+// {
+//     for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+//     {
+//         for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+//         {
+//             //3D:
+//             h_Arr_3D[0][iCh][iCent][iKt]->Sumw2();
+//             h_Arr_3D[1][iCh][iCent][iKt]->Sumw2();
+//             h_Arr_3D[2][iCh][iCent][iKt]->Sumw2();
+//         }
+//     }
+// }
 // 1) Calculating Norm. coeff:
-const Double_t q_i_min = 0.15;
-const Double_t q_i_max = 0.30;
+const Double_t q_i_min = 0.1;
+const Double_t q_i_max = 0.2;
 
 //A and B hists must be with same binning via all directions - out,side,long
 Double_t q_i_min_max_bins[4][N_Charge][N_Bins_Centr][N_Bins_Kt][3] = {0.0};
@@ -132,14 +132,14 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                 q_i_min_max_bins[0][iCh][iCent][iKt][1], q_i_min_max_bins[1][iCh][iCent][iKt][1],
                 q_i_min_max_bins[0][iCh][iCent][iKt][2], q_i_min_max_bins[1][iCh][iCent][iKt][2]) 
 
-                + h_Arr_3D[0][iCh][iCent][iKt]->Integral(
+                + h_Arr_3D[1][iCh][iCent][iKt]->Integral(
                 q_i_min_max_bins[2][iCh][iCent][iKt][0], q_i_min_max_bins[3][iCh][iCent][iKt][0],
                 q_i_min_max_bins[2][iCh][iCent][iKt][1], q_i_min_max_bins[3][iCh][iCent][iKt][1],
                 q_i_min_max_bins[2][iCh][iCent][iKt][2], q_i_min_max_bins[3][iCh][iCent][iKt][2]
                 );
 
             Norm_coeff_arr[iCh][iCent][iKt] = B_integrals_arr[iCh][iCent][iKt]/A_integrals_arr[iCh][iCent][iKt];
-            std::cout<< B_integrals_arr[iCh][iCent][iKt]<< " " <<iCent<<" "<< Norm_coeff_arr[iCh][iCent][iKt]<<std::endl;
+            std::cout<< A_integrals_arr[iCh][iCent][iKt]<< " "<< B_integrals_arr[iCh][iCent][iKt]<< " " <<iCent<<" "<< Norm_coeff_arr[iCh][iCent][iKt]<<std::endl;
         }
     }
 }
@@ -157,7 +157,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 
 
 // 2) Getting projections:
-const Double_t range = 0.035;//Gev/c              
+const Double_t range = 0.05;//Gev/c              
 TH1F* h_Arr_3D_Projects_OSL[N_hist_types_3D][N_Charge][N_Bins_Centr][N_Bins_Kt][3];
 
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
@@ -166,17 +166,49 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
     {
         for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
         {
-            for (Int_t iOSL = 0; iOSL < 3; iOSL++)
-            {
                 for (Int_t ihType=0; ihType < N_hist_types_3D; ihType++)
                 {
-                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][iOSL] = (TH1F*)h_Arr_3D[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[iOSL]);
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetYaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetZaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][0] = (TH1F*)h_Arr_3D[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[0]);
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][0]->SetName(Form("CF_3D_non_norm_%i_%i_%i_%i_%s",ihType,iCh,iCent,iKt,OSL_names[0].Data()));
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetYaxis()->SetRange();
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetZaxis()->SetRange();
+
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetXaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetZaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][1] = (TH1F*)h_Arr_3D[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[1]);
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][1]->SetName(Form("CF_3D_non_norm_%i_%i_%i_%i_%s",ihType,iCh,iCent,iKt,OSL_names[1].Data()));
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetXaxis()->SetRange();
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetZaxis()->SetRange();
+
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetXaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetYaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][2] = (TH1F*)h_Arr_3D[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[2]);
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][2]->SetName(Form("CF_3D_non_norm_%i_%i_%i_%i_%s",ihType,iCh,iCent,iKt,OSL_names[2].Data()));
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetXaxis()->SetRange();
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetYaxis()->SetRange();
                 }
-                h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Divide(h_Arr_3D_Projects_OSL[1][iCh][iCent][iKt][iOSL]);
-            }
         }
     }
 }
+// //Deviding A/B:
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+                    for(Int_t iOSL =0;iOSL<3;iOSL++)
+                    {
+                        // h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Sumw2();
+                        // h_Arr_3D_Projects_OSL[1][iCh][iCent][iKt][iOSL]->Sumw2();
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Divide(h_Arr_3D_Projects_OSL[1][iCh][iCent][iKt][iOSL]);
+                    }
+        }
+    }
+}
+
 
 TFile *f_out = new TFile(Output_File, "RECREATE");
 TCanvas *c_3D= new TCanvas("c_3D_Plus", "Canvas",1920,1080);
@@ -184,8 +216,9 @@ c_3D->Divide(3);
 
 for (Int_t iOSL = 0; iOSL < 3; iOSL++)
 {
+    
     h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetXaxis()->SetRangeUser(-0.1, 0.1);
-    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetYaxis()->SetRangeUser(0.096, 0.11);
+    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetYaxis()->SetRangeUser(0.8, 1.8);
     h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->SetTitle(Form("CF_3D_Projections_Non_norm Charge +, Centrality 0-5%%,  K_t [0.45,0.60] %s", OSL_names[iOSL].Data()));
     c_3D->cd(iOSL+1);
     h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->Draw();
@@ -195,7 +228,7 @@ c_3D->SaveAs(Output_Folder + "c_3D_1.pdf");
 for (Int_t iOSL = 0; iOSL < 3; iOSL++)
 {
     h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetXaxis()->SetRangeUser(-0.4, 0.4);
-    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetYaxis()->SetRangeUser(0.096, 0.11);
+    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetYaxis()->SetRangeUser(0.8, 1.8);
     h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->SetTitle(Form("CF_3D_Projections_Non_norm Charge +, Centrality 0-5%%, K_t [0.45,0.60] %s", OSL_names[iOSL].Data()));
     c_3D->cd(iOSL+1);
     h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->Draw();
