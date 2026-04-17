@@ -134,7 +134,7 @@ std::vector<Int_t> Shuffle_vector(Int_t N)
   return v;
 }
 //Spliting level: 
-const double maxSplitLevel = 0.7;
+const double maxSplitLevel = 0.6;
 //+1 if 01 or 10 at the same bit positions of two track hit info
 //-1 if 11
 // 0 if 00
@@ -190,6 +190,19 @@ void fill_A_qinv(const std::vector<My_ParticleTrackInfo>& Pions_4_momenta_hits_A
           double e1 = Pions_4_momenta_hits_Arr[i].p4.E();
         for (Int_t j = i+1; j < N_of_Pions; j++)
         {
+
+          double px2 =  Pions_4_momenta_hits_Arr[j].p4.Px();
+          double py2 = Pions_4_momenta_hits_Arr[j].p4.Py();
+          double pz2 = Pions_4_momenta_hits_Arr[j].p4.Pz();
+          double e2 = Pions_4_momenta_hits_Arr[j].p4.E();
+
+          //Kt check:
+          double Kt = sqrt( (px1+px2)*(px1+px2) + (py1+py2)*(py1+py2)) /2.;
+          Int_t i_kt_Bin= TMath::BinarySearch(N_Bins_Kt +1, KtBins, Kt);
+          if(i_kt_Bin<0 || i_kt_Bin > N_Bins_Kt-1)
+          {
+            continue;
+          }
           //SL check:
           double SplitLevel = getSplitLevel(Pions_4_momenta_hits_Arr[j],Pions_4_momenta_hits_Arr[i]);
           if(SplitLevel>maxSplitLevel)continue; //if SplitLevel is wery high - we stop iteration and get to next step over j
@@ -197,11 +210,6 @@ void fill_A_qinv(const std::vector<My_ParticleTrackInfo>& Pions_4_momenta_hits_A
           double FMR = fractionOfMergedRow(Pions_4_momenta_hits_Arr[j].helix,Pions_4_momenta_hits_Arr[i].helix);
           if(FMR>FMR_max) continue;
           hFMR_A->Fill(FMR);
-
-          double px2 =  Pions_4_momenta_hits_Arr[j].p4.Px();
-          double py2 = Pions_4_momenta_hits_Arr[j].p4.Py();
-          double pz2 = Pions_4_momenta_hits_Arr[j].p4.Pz();
-          double e2 = Pions_4_momenta_hits_Arr[j].p4.E();
 
           double q[4] {0.,0.,0.,0.};
           Get_q_inv_q_osl(px1, py1, pz1, e1, px2, py2, pz2, e2, q);
@@ -232,13 +240,7 @@ void fill_A_qinv(const std::vector<My_ParticleTrackInfo>& Pions_4_momenta_hits_A
 
           histA_osl->Fill(q[1],q[2],q[3]);//q_out,q_side,q_long
 
-          double Kt = sqrt( (px1+px2)*(px1+px2) + (py1+py2)*(py1+py2)) /2.;
-          Int_t i_kt_Bin= TMath::BinarySearch(N_Bins_Kt +1, KtBins, Kt);
-          if(i_kt_Bin<0 || i_kt_Bin > N_Bins_Kt-1)
-          {
-            continue;
-          }
-
+          
 
           h_Arr_1D[0][i_Charge][i_Centr][i_kt_Bin]->Fill(q_inv);
           h_Arr_3D[0][i_Charge][i_Centr][i_kt_Bin]->Fill(q[1],q[2],q[3]);
@@ -277,6 +279,19 @@ void comparePionsFillHistB(const std::vector<My_ParticleTrackInfo>& new_Pions_Ar
       //loop over pions from selected queue event:
       for(size_t k=0;k<nQueuePions;k++)
       {
+
+        double px2 =  queue_Pions_Arr[k].p4.Px();
+        double py2 = queue_Pions_Arr[k].p4.Py();
+        double pz2 = queue_Pions_Arr[k].p4.Pz();
+        double e2 = queue_Pions_Arr[k].p4.E();
+
+        //Kt check:
+        double Kt = sqrt( (px1+px2)*(px1+px2) + (py1+py2)*(py1+py2)) /2.;
+        Int_t i_kt_Bin= TMath::BinarySearch(N_Bins_Kt +1, KtBins, Kt);
+        if(i_kt_Bin<0 || i_kt_Bin > N_Bins_Kt-1)
+        {
+          continue;
+        }
         //SL check:
         double SplitLevel = getSplitLevel(new_Pions_Arr[j],queue_Pions_Arr[k]);
         if(SplitLevel>maxSplitLevel)continue;
@@ -284,11 +299,6 @@ void comparePionsFillHistB(const std::vector<My_ParticleTrackInfo>& new_Pions_Ar
         double FMR = fractionOfMergedRow(new_Pions_Arr[j].helix, queue_Pions_Arr[k].helix);
         if(FMR>FMR_max) continue;
         hFMR_B->Fill(FMR);
-
-        double px2 =  queue_Pions_Arr[k].p4.Px();
-        double py2 = queue_Pions_Arr[k].p4.Py();
-        double pz2 = queue_Pions_Arr[k].p4.Pz();
-        double e2 = queue_Pions_Arr[k].p4.E();
 
         double q[4] {0.,0.,0.,0.};
         Get_q_inv_q_osl(px1, py1, pz1, e1, px2, py2, pz2, e2, q);
@@ -308,13 +318,6 @@ void comparePionsFillHistB(const std::vector<My_ParticleTrackInfo>& new_Pions_Ar
 
         hist_B_osl->Fill(q[1],q[2],q[3]);
 
-        double Kt = sqrt( (px1+px2)*(px1+px2) + (py1+py2)*(py1+py2)) /2.;
-        Int_t i_kt_Bin= TMath::BinarySearch(N_Bins_Kt +1, KtBins, Kt);
-
-        if(i_kt_Bin<0 || i_kt_Bin > N_Bins_Kt-1)
-        {
-          continue;
-        }
 
         h_Arr_1D[1][i_Charge][i_Centr][i_kt_Bin]->Fill(q_inv);
         h_Arr_3D[1][i_Charge][i_Centr][i_kt_Bin]->Fill(q[1],q[2],q[3]);
