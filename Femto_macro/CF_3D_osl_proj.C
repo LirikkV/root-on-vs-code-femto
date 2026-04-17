@@ -17,19 +17,17 @@ const Int_t N_Bins_Centr = 9;
 
 const Double_t KtBins[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.60};
 
-TString Input_File = "/home/kirill/root-on-vs-code/Femto_output/out_Au_Au200_15_04_FMR.root";
-TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/out_Au_Au200_15_04_FMR_proseed_1D_3D.root";
-TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/";
-TString OSL_xyz[3] {"x","y","z"};
-TString OSL_names[3] {"out","side","long"};
+const TString Input_File = "/home/kirill/root-on-vs-code/Femto_output/out_Au_Au200_15_04_FMR.root";
+const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/out_Au_Au200_15_04_FMR_proseed_1D_3D.root";
+const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/";
+const TString OSL_xyz[3] {"x","y","z"};
+const TString OSL_names[3] {"out","side","long"};
 
 void CF_3D_osl_proj()
 {
 TFile *f = TFile::Open(Input_File, "READ");
 if (!f || f->IsZombie()) {std::cout << "Ohhhhh" << std::endl; exit(0); }
-//osl 3D:
-// std::array<std::array<std::array<std::array<TH3F*,N_Bins_Kt>,N_Bins_Centr>,N_Charge>, N_hist_types_3D> h_Arr_pionters_3D = {}; 
-// std::array<std::array<std::array<std::array<TH3F,N_Bins_Kt>,N_Bins_Centr>,N_Charge>, N_hist_types_3D> h_Arr_3D = {}; 
+//osl 3D: 
 TString hist_3D_Name = "h_3D";
 
 TH3F* h_Arr_pionters_3D[N_hist_types_3D][N_Charge][N_Bins_Centr][N_Bins_Kt];
@@ -46,8 +44,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                 {
             //3D:
             h_Arr_pionters_3D[ihType][iCh][iCent][iKt] = (TH3F* )f->Get(Form("%s_%i_%i_%i_%i",hist_3D_Name.Data(),ihType,iCh,iCent,iKt));
-            // cout<<h_Arr_pionters_3D[ihType][iCh][iCent][iKt]->GetEntries()<<endl;
-            if (!h_Arr_pionters_3D[ihType][iCh][iCent][iKt]) {std::cout << "Ohhhhhist" << std::endl; exit(0); }
+            if (!h_Arr_pionters_3D[ihType][iCh][iCent][iKt]) {std::cout << "Ohhhh hist" << std::endl; exit(0); }
             h_Arr_3D[ihType][iCh][iCent][iKt] = (TH3F*)h_Arr_pionters_3D[ihType][iCh][iCent][iKt]->Clone(Form("CF_3D_non_norm_%i_%i_%i_%i",ihType,iCh,iCent,iKt));
         }
         }
@@ -68,19 +65,101 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
         }
     }
 }
-/*
-Method: 
-1)Get relation of A/B in range of q_inv where no correlations 
-2)Scale A by relation from 1)
-3)CF=A_normilized/B
-*/
+// 1) Calculating Norm. coeff:
+const Double_t q_i_min = 0.15;
+const Double_t q_i_max = 0.30;
 
-//Method 2 for out side long: first project A and B then divide:
-//out
+//A and B hists must be with same binning via all directions - out,side,long
+Double_t q_i_min_max_bins[4][N_Charge][N_Bins_Centr][N_Bins_Kt][3] = {0.0};
+// ----[q_min_max[0], q_min_max[1]]---0---[q_min_max[2], q_min_max[3]]----
 
-//3D with bins:                         
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+
+            q_i_min_max_bins[0][iCh][iCent][iKt][0] = h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->FindBin(-q_i_max);
+            q_i_min_max_bins[0][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(-q_i_max);
+            q_i_min_max_bins[0][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(-q_i_max);
+
+
+            q_i_min_max_bins[1][iCh][iCent][iKt][0] = h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->FindBin(-q_i_min);
+            q_i_min_max_bins[1][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(-q_i_min);
+            q_i_min_max_bins[1][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(-q_i_min);
+
+            q_i_min_max_bins[2][iCh][iCent][iKt][0] = h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->FindBin(q_i_min);
+            q_i_min_max_bins[2][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(q_i_min);
+            q_i_min_max_bins[2][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(q_i_min);
+
+            q_i_min_max_bins[3][iCh][iCent][iKt][0] = h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->FindBin(q_i_max);
+            q_i_min_max_bins[3][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(q_i_max);
+            q_i_min_max_bins[3][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(q_i_max);
+
+            // for(int i=0;i<4;i++)
+            // {
+            // std::cout<<q_i_min_max_bins[i][iCh][iCent][iKt][0]<<std::endl;
+            // }
+        }
+    }
+}
+
+Double_t A_integrals_arr[N_Charge][N_Bins_Centr][N_Bins_Kt] = {0.0};
+Double_t B_integrals_arr[N_Charge][N_Bins_Centr][N_Bins_Kt] = {0.0};
+Double_t Norm_coeff_arr[N_Charge][N_Bins_Centr][N_Bins_Kt] = {0.0}; // Norm_coeff = B/A
+
+
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+
+            A_integrals_arr[iCh][iCent][iKt]= h_Arr_3D[0][iCh][iCent][iKt]->Integral(
+                q_i_min_max_bins[0][iCh][iCent][iKt][0], q_i_min_max_bins[1][iCh][iCent][iKt][0],
+                q_i_min_max_bins[0][iCh][iCent][iKt][1], q_i_min_max_bins[1][iCh][iCent][iKt][1],
+                q_i_min_max_bins[0][iCh][iCent][iKt][2], q_i_min_max_bins[1][iCh][iCent][iKt][2]) 
+
+                + h_Arr_3D[0][iCh][iCent][iKt]->Integral(
+                q_i_min_max_bins[2][iCh][iCent][iKt][0], q_i_min_max_bins[3][iCh][iCent][iKt][0],
+                q_i_min_max_bins[2][iCh][iCent][iKt][1], q_i_min_max_bins[3][iCh][iCent][iKt][1],
+                q_i_min_max_bins[2][iCh][iCent][iKt][2], q_i_min_max_bins[3][iCh][iCent][iKt][2]
+                );
+            B_integrals_arr[iCh][iCent][iKt]= h_Arr_3D[1][iCh][iCent][iKt]->Integral(
+                q_i_min_max_bins[0][iCh][iCent][iKt][0], q_i_min_max_bins[1][iCh][iCent][iKt][0],
+                q_i_min_max_bins[0][iCh][iCent][iKt][1], q_i_min_max_bins[1][iCh][iCent][iKt][1],
+                q_i_min_max_bins[0][iCh][iCent][iKt][2], q_i_min_max_bins[1][iCh][iCent][iKt][2]) 
+
+                + h_Arr_3D[0][iCh][iCent][iKt]->Integral(
+                q_i_min_max_bins[2][iCh][iCent][iKt][0], q_i_min_max_bins[3][iCh][iCent][iKt][0],
+                q_i_min_max_bins[2][iCh][iCent][iKt][1], q_i_min_max_bins[3][iCh][iCent][iKt][1],
+                q_i_min_max_bins[2][iCh][iCent][iKt][2], q_i_min_max_bins[3][iCh][iCent][iKt][2]
+                );
+
+            Norm_coeff_arr[iCh][iCent][iKt] = B_integrals_arr[iCh][iCent][iKt]/A_integrals_arr[iCh][iCent][iKt];
+            std::cout<< B_integrals_arr[iCh][iCent][iKt]<< " " <<iCent<<" "<< Norm_coeff_arr[iCh][iCent][iKt]<<std::endl;
+        }
+    }
+}
+//Scaling 3D A in CF:
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+            h_Arr_3D[0][iCh][iCent][iKt]->Scale(Norm_coeff_arr[iCh][iCent][iKt]);
+        }
+    }
+}
+
+
+// 2) Getting projections:
+const Double_t range = 0.035;//Gev/c              
 TH1F* h_Arr_3D_Projects_OSL[N_hist_types_3D][N_Charge][N_Bins_Centr][N_Bins_Kt][3];
-//Getting projections:
+
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 {
     for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
@@ -98,6 +177,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
         }
     }
 }
+
 TFile *f_out = new TFile(Output_File, "RECREATE");
 TCanvas *c_3D= new TCanvas("c_3D_Plus", "Canvas",1920,1080);
 c_3D->Divide(3);
@@ -106,7 +186,7 @@ for (Int_t iOSL = 0; iOSL < 3; iOSL++)
 {
     h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetXaxis()->SetRangeUser(-0.1, 0.1);
     h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetYaxis()->SetRangeUser(0.096, 0.11);
-    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->SetTitle(Form("CF_3D_Projections_Non_norm Charge +, Centrality 0-5%, K_t [0.45,0.60]" + OSL_names[iOSL] ));
+    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->SetTitle(Form("CF_3D_Projections_Non_norm Charge +, Centrality 0-5%%,  K_t [0.45,0.60] %s", OSL_names[iOSL].Data()));
     c_3D->cd(iOSL+1);
     h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->Draw();
     
@@ -116,7 +196,7 @@ for (Int_t iOSL = 0; iOSL < 3; iOSL++)
 {
     h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetXaxis()->SetRangeUser(-0.4, 0.4);
     h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetYaxis()->SetRangeUser(0.096, 0.11);
-    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->SetTitle(Form("CF_3D_Projections_Non_norm Charge +, Centrality 0-5%, K_t [0.45,0.60]" + OSL_names[iOSL] ));
+    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->SetTitle(Form("CF_3D_Projections_Non_norm Charge +, Centrality 0-5%%, K_t [0.45,0.60] %s", OSL_names[iOSL].Data()));
     c_3D->cd(iOSL+1);
     h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->Draw();
     
