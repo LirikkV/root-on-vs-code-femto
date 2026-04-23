@@ -17,9 +17,9 @@ const Int_t N_Bins_Centr = 9;
 
 const Double_t KtBins[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.60};
 
-const TString Input_File = "/home/kirill/root-on-vs-code/Femto_output/out_Au_Au200_15_04_FMR.root";
-const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/out_Au_Au200_15_04_FMR_proseed_1D_3D.root";
-const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/";
+const TString Input_File = "/home/kirill/root-on-vs-code/Femto_input/out_Au_Au200_23_04_FMRW.root";
+const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/23_04_FMRW/out_Au_Au200_23_04_FMR_proseed_1D_3D.root";
+const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/23_04_FMRW/";
 const TString OSL_xyz[3] {"x","y","z"};
 const TString OSL_names[3] {"out","side","long"};
 
