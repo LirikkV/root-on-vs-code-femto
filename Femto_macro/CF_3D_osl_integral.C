@@ -14,34 +14,36 @@ const Int_t N_Charge = 2; // 0 <-> Pi_Plus; 1 <-> Pi_Minus
 
 
 const TString Input_File = "/home/kirill/root-on-vs-code/Femto_input/out_Au_Au200_23_04_FMRW.root";
-const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/23_04_FMRW/out_Au_Au200_23_04_FMR_proseed_1D_3D.root";
+const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/23_04_FMRW/out_Au_Au200_23_04_FMR_proseed_3D_integral.root";
 const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/23_04_FMRW/";
 const TString OSL_xyz[3] {"x","y","z"};
 const TString OSL_names[3] {"out","side","long"};
+const TString hist_3D_Name_AB[N_hist_types_3D_integral][N_Charge] =
+  {{"hA_Pi_Plus_q_osl","hA_Pi_Minus_q_osl"},
+   {"hB_Pi_Plus_q_osl","hB_Pi_Minus_q_osl"}
+  };
+const TString hist_CF_projections_Name[N_Charge] = {"CF_projections_integral_Plus","CF_projections_integral_Minus"};
 
 void CF_3D_osl_integral()
 {
 TFile *f = TFile::Open(Input_File, "READ");
 if (!f || f->IsZombie()) {std::cout << "Ohhhhh" << std::endl; exit(0); }
-//osl 3D: 
-TString hist_3D_Name_AB[2] = {"hA_Pi_Plus_q_osl","hB_Pi_Plus_q_osl"};
 
-
-TH3F* h_Arr_pionters_3D_integral[N_hist_types_3D_integral];
-TH3F* h_Arr_3D_integral[N_hist_types_3D_integral];
-
+TH3F* h_Arr_3D_integral[N_hist_types_3D_integral][N_Charge];
 
 
 for (Int_t ihType = 0; ihType < N_hist_types_3D_integral; ihType++)
 {
-    h_Arr_pionters_3D_integral[ihType] = (TH3F *)f->Get(hist_3D_Name_AB[ihType]);
+    for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+    {
+    h_Arr_3D_integral[ihType][iCh] = (TH3F *)f->Get(hist_3D_Name_AB[ihType][iCh]);
     // 3D:
-    if (!h_Arr_pionters_3D_integral[ihType])
+    if (!h_Arr_3D_integral[ihType][iCh])
     {
         std::cout << "Ohhhh hist" << std::endl;
         exit(0);
     }
-    h_Arr_3D_integral[ihType] = (TH3F *)h_Arr_pionters_3D_integral[ihType]->Clone(hist_3D_Name_AB[ihType]);
+    }
 }
 
 // //!!! WARNING NEXT STRINGSs are NECECERY:
@@ -69,26 +71,26 @@ Double_t q_i_min_max_bins[4][N_Charge][3] = {0.0};
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 {
 
-            q_i_min_max_bins[0][iCh][0] = h_Arr_3D_integral[0]->GetXaxis()->FindBin(-q_i_max);
-            q_i_min_max_bins[0][iCh][1] = h_Arr_3D_integral[0]->GetYaxis()->FindBin(-q_i_max);
-            q_i_min_max_bins[0][iCh][2] = h_Arr_3D_integral[0]->GetZaxis()->FindBin(-q_i_max);
+            q_i_min_max_bins[0][iCh][0] = h_Arr_3D_integral[0][iCh]->GetXaxis()->FindBin(-q_i_max);
+            q_i_min_max_bins[0][iCh][1] = h_Arr_3D_integral[0][iCh]->GetYaxis()->FindBin(-q_i_max);
+            q_i_min_max_bins[0][iCh][2] = h_Arr_3D_integral[0][iCh]->GetZaxis()->FindBin(-q_i_max);
 
 
-            q_i_min_max_bins[1][iCh][0] = h_Arr_3D_integral[0]->GetXaxis()->FindBin(-q_i_min);
-            q_i_min_max_bins[1][iCh][1] = h_Arr_3D_integral[0]->GetYaxis()->FindBin(-q_i_min);
-            q_i_min_max_bins[1][iCh][2] = h_Arr_3D_integral[0]->GetZaxis()->FindBin(-q_i_min);
+            q_i_min_max_bins[1][iCh][0] = h_Arr_3D_integral[0][iCh]->GetXaxis()->FindBin(-q_i_min);
+            q_i_min_max_bins[1][iCh][1] = h_Arr_3D_integral[0][iCh]->GetYaxis()->FindBin(-q_i_min);
+            q_i_min_max_bins[1][iCh][2] = h_Arr_3D_integral[0][iCh]->GetZaxis()->FindBin(-q_i_min);
 
-            q_i_min_max_bins[2][iCh][0] = h_Arr_3D_integral[0]->GetXaxis()->FindBin(q_i_min);
-            q_i_min_max_bins[2][iCh][1] = h_Arr_3D_integral[0]->GetYaxis()->FindBin(q_i_min);
-            q_i_min_max_bins[2][iCh][2] = h_Arr_3D_integral[0]->GetZaxis()->FindBin(q_i_min);
+            q_i_min_max_bins[2][iCh][0] = h_Arr_3D_integral[0][iCh]->GetXaxis()->FindBin(q_i_min);
+            q_i_min_max_bins[2][iCh][1] = h_Arr_3D_integral[0][iCh]->GetYaxis()->FindBin(q_i_min);
+            q_i_min_max_bins[2][iCh][2] = h_Arr_3D_integral[0][iCh]->GetZaxis()->FindBin(q_i_min);
 
-            q_i_min_max_bins[3][iCh][0] = h_Arr_3D_integral[0]->GetXaxis()->FindBin(q_i_max);
-            q_i_min_max_bins[3][iCh][1] = h_Arr_3D_integral[0]->GetYaxis()->FindBin(q_i_max);
-            q_i_min_max_bins[3][iCh][2] = h_Arr_3D_integral[0]->GetZaxis()->FindBin(q_i_max);
+            q_i_min_max_bins[3][iCh][0] = h_Arr_3D_integral[0][iCh]->GetXaxis()->FindBin(q_i_max);
+            q_i_min_max_bins[3][iCh][1] = h_Arr_3D_integral[0][iCh]->GetYaxis()->FindBin(q_i_max);
+            q_i_min_max_bins[3][iCh][2] = h_Arr_3D_integral[0][iCh]->GetZaxis()->FindBin(q_i_max);
 
             // for(int i=0;i<4;i++)
             // {
-            // std::cout<<q_i_min_max_bins[i][0][0]<<std::endl;
+            // std::cout<<q_i_min_max_bins[i][iCh][0]<<std::endl;
             // }
 }
 
@@ -99,22 +101,22 @@ Double_t Norm_coeff_arr[N_Charge] = {0.0}; // Norm_coeff = B/A
 
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 {
-            A_integrals_arr[iCh]= h_Arr_3D_integral[0]->Integral(
+            A_integrals_arr[iCh]= h_Arr_3D_integral[0][iCh]->Integral(
                 q_i_min_max_bins[0][iCh][0], q_i_min_max_bins[1][iCh][0],
                 q_i_min_max_bins[0][iCh][1], q_i_min_max_bins[1][iCh][1],
                 q_i_min_max_bins[0][iCh][2], q_i_min_max_bins[1][iCh][2]) 
 
-                + h_Arr_3D_integral[0]->Integral(
+                + h_Arr_3D_integral[0][iCh]->Integral(
                 q_i_min_max_bins[2][iCh][0], q_i_min_max_bins[3][iCh][0],
                 q_i_min_max_bins[2][iCh][1], q_i_min_max_bins[3][iCh][1],
                 q_i_min_max_bins[2][iCh][2], q_i_min_max_bins[3][iCh][2]
                 );
-            B_integrals_arr[iCh]= h_Arr_3D_integral[1]->Integral(
+            B_integrals_arr[iCh]= h_Arr_3D_integral[1][iCh]->Integral(
                 q_i_min_max_bins[0][iCh][0], q_i_min_max_bins[1][iCh][0],
                 q_i_min_max_bins[0][iCh][1], q_i_min_max_bins[1][iCh][1],
                 q_i_min_max_bins[0][iCh][2], q_i_min_max_bins[1][iCh][2]) 
 
-                + h_Arr_3D_integral[1]->Integral(
+                + h_Arr_3D_integral[1][iCh]->Integral(
                 q_i_min_max_bins[2][iCh][0], q_i_min_max_bins[3][iCh][0],
                 q_i_min_max_bins[2][iCh][1], q_i_min_max_bins[3][iCh][1],
                 q_i_min_max_bins[2][iCh][2], q_i_min_max_bins[3][iCh][2]
@@ -124,10 +126,10 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             std::cout<< A_integrals_arr[iCh]<< " "<< B_integrals_arr[iCh]<<" "<< Norm_coeff_arr[iCh]<<std::endl;
 }
 //Scaling 3D A in CF:
-// for (Int_t iCh = 0; iCh < N_Charge; iCh++)
-// {
-            h_Arr_3D_integral[0]->Scale(Norm_coeff_arr[0]);
-// }
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    h_Arr_3D_integral[0][iCh]->Scale(Norm_coeff_arr[iCh]);
+}
 
 
 // 2) Getting projections:
@@ -138,26 +140,26 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 {
                 for (Int_t ihType=0; ihType < N_hist_types_3D_integral; ihType++)
                 {
-                    h_Arr_3D_integral[ihType]->GetYaxis()->SetRangeUser(-range,range);
-                    h_Arr_3D_integral[ihType]->GetZaxis()->SetRangeUser(-range,range);
-                    h_Arr_3D_Projects_integral_OSL[ihType][iCh][0] = (TH1F*)h_Arr_3D_integral[ihType]->Project3D(OSL_xyz[0]);
-                    h_Arr_3D_Projects_integral_OSL[ihType][iCh][0]->SetName(hist_3D_Name_AB[ihType]+OSL_names[0]);
-                    h_Arr_3D_integral[ihType]->GetYaxis()->SetRange();
-                    h_Arr_3D_integral[ihType]->GetZaxis()->SetRange();
+                    h_Arr_3D_integral[ihType][iCh]->GetYaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D_integral[ihType][iCh]->GetZaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D_Projects_integral_OSL[ihType][iCh][0] = (TH1F*)h_Arr_3D_integral[ihType][iCh]->Project3D(OSL_xyz[0]);
+                    h_Arr_3D_Projects_integral_OSL[ihType][iCh][0]->SetName(hist_3D_Name_AB[ihType][iCh]+OSL_names[0]);
+                    h_Arr_3D_integral[ihType][iCh]->GetYaxis()->SetRange();
+                    h_Arr_3D_integral[ihType][iCh]->GetZaxis()->SetRange();
 
-                    h_Arr_3D_integral[ihType]->GetXaxis()->SetRangeUser(-range,range);
-                    h_Arr_3D_integral[ihType]->GetZaxis()->SetRangeUser(-range,range);
-                    h_Arr_3D_Projects_integral_OSL[ihType][iCh][1] = (TH1F*)h_Arr_3D_integral[ihType]->Project3D(OSL_xyz[1]);
-                    h_Arr_3D_Projects_integral_OSL[ihType][iCh][1]->SetName(hist_3D_Name_AB[ihType]+OSL_names[1]);
-                    h_Arr_3D_integral[ihType]->GetXaxis()->SetRange();
-                    h_Arr_3D_integral[ihType]->GetZaxis()->SetRange();
+                    h_Arr_3D_integral[ihType][iCh]->GetXaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D_integral[ihType][iCh]->GetZaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D_Projects_integral_OSL[ihType][iCh][1] = (TH1F*)h_Arr_3D_integral[ihType][iCh]->Project3D(OSL_xyz[1]);
+                    h_Arr_3D_Projects_integral_OSL[ihType][iCh][1]->SetName(hist_3D_Name_AB[ihType][iCh]+OSL_names[1]);
+                    h_Arr_3D_integral[ihType][iCh]->GetXaxis()->SetRange();
+                    h_Arr_3D_integral[ihType][iCh]->GetZaxis()->SetRange();
 
-                    h_Arr_3D_integral[ihType]->GetXaxis()->SetRangeUser(-range,range);
-                    h_Arr_3D_integral[ihType]->GetYaxis()->SetRangeUser(-range,range);
-                    h_Arr_3D_Projects_integral_OSL[ihType][iCh][2] = (TH1F*)h_Arr_3D_integral[ihType]->Project3D(OSL_xyz[2]);
-                    h_Arr_3D_Projects_integral_OSL[ihType][iCh][2]->SetName(hist_3D_Name_AB[ihType]+OSL_names[2]);
-                    h_Arr_3D_integral[ihType]->GetXaxis()->SetRange();
-                    h_Arr_3D_integral[ihType]->GetYaxis()->SetRange();
+                    h_Arr_3D_integral[ihType][iCh]->GetXaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D_integral[ihType][iCh]->GetYaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D_Projects_integral_OSL[ihType][iCh][2] = (TH1F*)h_Arr_3D_integral[ihType][iCh]->Project3D(OSL_xyz[2]);
+                    h_Arr_3D_Projects_integral_OSL[ihType][iCh][2]->SetName(hist_3D_Name_AB[ihType][iCh]+OSL_names[2]);
+                    h_Arr_3D_integral[ihType][iCh]->GetXaxis()->SetRange();
+                    h_Arr_3D_integral[ihType][iCh]->GetYaxis()->SetRange();
                 }
 }
 // //Deviding A/B:
@@ -168,11 +170,21 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                         // h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Sumw2();
                         // h_Arr_3D_Projects_OSL[1][iCh][iCent][iKt][iOSL]->Sumw2();
                         h_Arr_3D_Projects_integral_OSL[0][iCh][iOSL]->Divide(h_Arr_3D_Projects_integral_OSL[1][iCh][iOSL]);
+                        h_Arr_3D_Projects_integral_OSL[0][iCh][iOSL]->SetName(hist_CF_projections_Name[iCh]+OSL_names[iOSL]);
                     }
 }
 
 
 TFile *f_out = new TFile(Output_File, "RECREATE");
+//Writing
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iOSL = 0; iOSL < 3; iOSL++)
+    {
+        h_Arr_3D_Projects_integral_OSL[0][iCh][iOSL]->Write();
+    }
+}
+
 TCanvas *c_3D= new TCanvas("c_3D_Plus", "Canvas",1920,1080);
 c_3D->Divide(3);
 

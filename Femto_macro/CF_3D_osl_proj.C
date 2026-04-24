@@ -18,7 +18,7 @@ const Int_t N_Bins_Centr = 9;
 const Double_t KtBins[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.60};
 
 const TString Input_File = "/home/kirill/root-on-vs-code/Femto_input/out_Au_Au200_23_04_FMRW.root";
-const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/23_04_FMRW/out_Au_Au200_23_04_FMR_proseed_1D_3D.root";
+const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/23_04_FMRW/out_Au_Au200_23_04_FMR_proseed_1D_3D_proj.root";
 const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/23_04_FMRW/";
 const TString OSL_xyz[3] {"x","y","z"};
 const TString OSL_names[3] {"out","side","long"};
@@ -211,6 +211,21 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 
 
 TFile *f_out = new TFile(Output_File, "RECREATE");
+//Writing CF projections:
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+                    for(Int_t iOSL =0;iOSL<3;iOSL++)
+                    {
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Write();
+                    }
+        }
+    }
+}
+
 TCanvas *c_3D= new TCanvas("c_3D_Plus", "Canvas",1920,1080);
 c_3D->Divide(3);
 
