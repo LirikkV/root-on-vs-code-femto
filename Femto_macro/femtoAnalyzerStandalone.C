@@ -669,12 +669,17 @@ gRandom->SetSeed(42);
   mRefMultCorrUtil->setVerbose(kFALSE);
 
   // Loop over events
-  for(Long64_t iEvent=0; iEvent<events2read; iEvent++) {
-    if(iEvent%1000==0)
-    {
+  // for(Long64_t iEvent=0; iEvent<events2read; iEvent++) {
+  //   if(iEvent%1000==0)
+  //   {
+  //   std::cout << "Working on event #[" << (iEvent+1)
+	//       << "/" << events2read << "]" << std::endl;
+  //   }
+    for(Long64_t iEvent=0; iEvent<100; iEvent++) {
     std::cout << "Working on event #[" << (iEvent+1)
 	      << "/" << events2read << "]" << std::endl;
-    }
+
+       
     Bool_t readEvent = femtoReader->readFemtoEvent(iEvent);
     if( !readEvent ) {
       std::cout << "Something went wrong, Master! Nothing to analyze..."
@@ -864,79 +869,81 @@ gRandom->SetSeed(42);
         }
 
       }//end of TPC only
-      //TPC+TOF PID:
-      else if( is_TPC_TOF_momenta_range ) //p_max already set by track choise
-      {
-      // StFemtoBTofPidTraits *trait = dst->btofPidTraits(femtoTrack->bTofPidTraitsIndex()); // Retrieve corresponding trait
-      // if (!trait)
-      // {
-      //   std::cout << "O-oh... No BTofPidTrait # " << femtoTrack->bTofPidTraitsIndex()
-      //             << " for track # " << iTrk << std::endl;
-      //   std::cout << "Check that you turned on the branch!" << std::endl;
-      //   continue;
-      // }
-      
-      //variables for QA:
-      Double_t m_square = femtoTrack->massSqr();
-      //femtoTrack->pMom().Mag2()*(1./((trait->btofBeta())*(trait->btofBeta()))-1.);
-      Double_t m_Pion = 0.13957039;//GeV
-      Double_t one_beta_expect = sqrt(m_Pion*m_Pion+(femtoTrack->pMom().Mag2()))/(femtoTrack->pMom().Mag());
-      
-      Double_t beta_TOF = femtoTrack->beta();
 
-      //QA hists before PID but after TOF check (all that contains trait):
+    {//   //TPC+TOF PID:
+    //   else if( is_TPC_TOF_momenta_range ) //p_max already set by track choise
+    //   {
+    //   // StFemtoBTofPidTraits *trait = dst->btofPidTraits(femtoTrack->bTofPidTraitsIndex()); // Retrieve corresponding trait
+    //   // if (!trait)
+    //   // {
+    //   //   std::cout << "O-oh... No BTofPidTrait # " << femtoTrack->bTofPidTraitsIndex()
+    //   //             << " for track # " << iTrk << std::endl;
+    //   //   std::cout << "Check that you turned on the branch!" << std::endl;
+    //   //   continue;
+    //   // }
       
-      h1_OverBeta_vs_pPrimTotDevQ->Fill(PtotPrimQ,1./(beta_TOF));
-      hm2_vs_pPrimTotDevQ->Fill(PtotPrimQ,m_square);
-      h1_OverBetaDelta_vs_pPrimTotDevQ->Fill(PtotPrimQ, 1./(beta_TOF) - one_beta_expect);
+    //   //variables for QA:
+    //   Double_t m_square = femtoTrack->massSqr();
+    //   //femtoTrack->pMom().Mag2()*(1./((trait->btofBeta())*(trait->btofBeta()))-1.);
+    //   Double_t m_Pion = 0.13957039;//GeV
+    //   Double_t one_beta_expect = sqrt(m_Pion*m_Pion+(femtoTrack->pMom().Mag2()))/(femtoTrack->pMom().Mag());
       
-      hTEST_Beta_pPrimTotDevQ->Fill(PtotPrimQ,(1./((beta_TOF)*(beta_TOF))-1.));
-      hTEST_P2_pPrimTotDevQ->Fill(PtotPrimQ, femtoTrack->pMom().Mag2());
+    //   Double_t beta_TOF = femtoTrack->beta();
 
-      Bool_t is_nSigma_Pion = fabs(femtoTrack->nSigmaPion())<nSigmaPion_max_TOF;
-      if(!is_nSigma_Pion) continue;
-      Bool_t is_1_beta_delta = fabs(1./(beta_TOF)-one_beta_expect)<one_over_beta_delta_max;
-      if(!is_1_beta_delta) continue;
-      Bool_t is_m2 = m2_min<m_square && m_square<m2_max;
-      if(is_m2)
-      {
-        //QA hists filling after PID TPC+TOF cut:
-        hNSigmPion_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaPion());
-        hNSigmKaon_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaKaon());
-        hNSigmProton_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaProton());
-        hNSigmElectron_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaElectron());
-        hdEdx_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,femtoTrack->dEdx());
+    //   //QA hists before PID but after TOF check (all that contains trait):
+      
+    //   h1_OverBeta_vs_pPrimTotDevQ->Fill(PtotPrimQ,1./(beta_TOF));
+    //   hm2_vs_pPrimTotDevQ->Fill(PtotPrimQ,m_square);
+    //   h1_OverBetaDelta_vs_pPrimTotDevQ->Fill(PtotPrimQ, 1./(beta_TOF) - one_beta_expect);
+      
+    //   hTEST_Beta_pPrimTotDevQ->Fill(PtotPrimQ,(1./((beta_TOF)*(beta_TOF))-1.));
+    //   hTEST_P2_pPrimTotDevQ->Fill(PtotPrimQ, femtoTrack->pMom().Mag2());
 
-        h1_OverBeta_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,1./(beta_TOF));
-        h1_OverBetaDelta_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, 1./(beta_TOF) - one_beta_expect);
-        hm2_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,m_square);
+    //   Bool_t is_nSigma_Pion = fabs(femtoTrack->nSigmaPion())<nSigmaPion_max_TOF;
+    //   if(!is_nSigma_Pion) continue;
+    //   Bool_t is_1_beta_delta = fabs(1./(beta_TOF)-one_beta_expect)<one_over_beta_delta_max;
+    //   if(!is_1_beta_delta) continue;
+    //   Bool_t is_m2 = m2_min<m_square && m_square<m2_max;
+    //   if(is_m2)
+    //   {
+    //     //QA hists filling after PID TPC+TOF cut:
+    //     hNSigmPion_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaPion());
+    //     hNSigmKaon_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaKaon());
+    //     hNSigmProton_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaProton());
+    //     hNSigmElectron_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaElectron());
+    //     hdEdx_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,femtoTrack->dEdx());
+
+    //     h1_OverBeta_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,1./(beta_TOF));
+    //     h1_OverBetaDelta_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, 1./(beta_TOF) - one_beta_expect);
+    //     hm2_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,m_square);
         
-        //let's fill c++ vector of Pions after TPC & TOF PID:
-        Double_t temp_pion_Energy_TOF_TPC = sqrt(femtoTrack->pMom().Mag2()+m_Pion*m_Pion);
-        My_LorenzVector temp_four_vector(femtoTrack->pMom().Px(), femtoTrack->pMom().Py(),
-                              femtoTrack->pMom().Pz(), temp_pion_Energy_TOF_TPC);
+    //     //let's fill c++ vector of Pions after TPC & TOF PID:
+    //     Double_t temp_pion_Energy_TOF_TPC = sqrt(femtoTrack->pMom().Mag2()+m_Pion*m_Pion);
+    //     My_LorenzVector temp_four_vector(femtoTrack->pMom().Px(), femtoTrack->pMom().Py(),
+    //                           femtoTrack->pMom().Pz(), temp_pion_Energy_TOF_TPC);
 
-          My_ParticleTrackInfo temp_MyParticle;
-          temp_MyParticle.p4 = temp_four_vector;
-          temp_MyParticle.topologyMap0 = femtoTrack->map0();
-          temp_MyParticle.topologyMap1 = femtoTrack->map1();
-          temp_MyParticle.iTpcTopologyMap = femtoTrack->iTpcTopologyMap();
-          temp_MyParticle.Nhits = femtoTrack->nHits();
-          temp_MyParticle.helix = femtoTrack->helix( event->magneticField() );
+    //       My_ParticleTrackInfo temp_MyParticle;
+    //       temp_MyParticle.p4 = temp_four_vector;
+    //       temp_MyParticle.topologyMap0 = femtoTrack->map0();
+    //       temp_MyParticle.topologyMap1 = femtoTrack->map1();
+    //       temp_MyParticle.iTpcTopologyMap = femtoTrack->iTpcTopologyMap();
+    //       temp_MyParticle.Nhits = femtoTrack->nHits();
+    //       temp_MyParticle.helix = femtoTrack->helix( event->magneticField() );
 
-        //separation to Pi+Pi+ & Pi-Pi- pairs
-        if (femtoTrack->charge() > 0.)
-        {
-          Pions_Plus_4_momenta_hits_Arr_ALL.push_back(temp_MyParticle);
-        }
-        else if (femtoTrack->charge() < 0.)
-        {
-          Pions_Minus_4_momenta_hits_Arr_ALL.push_back(temp_MyParticle);
-        }
-      }//end of PID
+    //     //separation to Pi+Pi+ & Pi-Pi- pairs
+    //     if (femtoTrack->charge() > 0.)
+    //     {
+    //       Pions_Plus_4_momenta_hits_Arr_ALL.push_back(temp_MyParticle);
+    //     }
+    //     else if (femtoTrack->charge() < 0.)
+    //     {
+    //       Pions_Minus_4_momenta_hits_Arr_ALL.push_back(temp_MyParticle);
+    //     }
+    //   }//end of is_m2
 
-    }//end of TOF + TPC
-
+    //}//end of TOF + TPC
+    }
+    
     }//end of track selection
     } //for(Int_t iTrk=0; iTrk<nTracks; iTrk++)
 
