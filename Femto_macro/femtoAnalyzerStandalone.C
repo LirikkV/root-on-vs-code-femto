@@ -60,15 +60,20 @@
 #include "StFemtoPhysicalHelix.h"
 #include "StRefMultCorr.h"
 
+//for paralel:
+//make -j4 !!
+//sh LocalSubmitJob.sh AuAu200_production_2011 8 18 test_5
+
 //What energy?
 // 7.7 GeV  - 0 
 // 19.6 GeV - 1
 // 200 GeV  - 2
-const Int_t Energy_SWITCH = 2;
+const Int_t Energy_SWITCH = 2; //RECOMPILE!!!!!
 
 // Tables for variables for event cut with different energies:
 const Double_t Vtx_r_Max = 2.0;  // cm
 const Double_t Vtx_z_Max_Table[] = {70.0, 30.0, 30.0}; //cm
+//numbers of bins over Vz:
 const Int_t nVzCuts_Table[] = {28,12,12};// 28 = ( 70/5 )*2; 12 = 30/5 *2 5 cm - for mixing events
 
 const Double_t VzBins_Table_0[] = {-70.,-65.,-60.,-55.,-50.,-45.,-40.,-35.,-30.,-25.,-20.,-15.,-10.,-5., 0.,
@@ -107,6 +112,15 @@ const Int_t CentrBins[N_Bins_Centr + 1] = {0, 1, 2, 3, 4, 5, 6, 7, 8}; // 0 - le
 
 const Int_t BUFFER_SIZE = 5;
 
+// variables for track cut:
+const Int_t N_TPC_fit_hits_min = 15;
+const Double_t DCA_max = 3.0;         // cm
+const Double_t p_trans_prim_min = 0.15;
+const Double_t p_trans_prim_max = 0.8;
+const Double_t pseudo_rap_prim_max = 1.0;
+const Double_t rapidity_mid_min = -0.5;
+const Double_t rapidity_mid_max = 0.5;
+
 struct My_ParticleTrackInfo{
   My_LorenzVector p4;
   UInt_t topologyMap0;
@@ -115,6 +129,10 @@ struct My_ParticleTrackInfo{
   Int_t Nhits;
   StFemtoPhysicalHelix helix;
 };
+Double_t My_Rapidity(Double_t pz, Double_t E)
+{
+  return 0.5*(ROOT::Math::log((E+pz)/(E-pz)));
+}
 //function for out, side, long projections of q:
 void Get_q_inv_q_osl(const double& px1,const double& py1,const double& pz1,const double& e1,
                          const double& px2,const double& py2,const double& pz2,const double& e2,
@@ -488,6 +506,12 @@ gRandom->SetSeed(42);
   TH1F *hPrimaryPseudorap_cut = new TH1F("hPrimaryPseudorap_cut",
 				   "Primary track pseudorapidity after cut",
 				  100, -2., 2. );
+  TH1F *hPrimaryRapidity = new TH1F("hPrimaryRapidity",
+				   "Primary track rapidity",
+				  100, -2., 2. );
+  TH1F *hPrimaryRapidity_cut = new TH1F("hPrimaryRapidity_cut",
+				   "Primary track rapidity after cut",
+				  100, -2., 2. );
   
   TH2F *hNSigmPion_vs_pPrimTotDevQ = new TH2F("hNSigmPion_vs_pPrimTotDevQ",
 			    "nSigma(pion) vs P_prim_tot/q;;nSigma",
@@ -790,16 +814,8 @@ gRandom->SetSeed(42);
       hPrimaryPseudorap->Fill(femtoTrack->pMom().Eta());
       h2DpPrimTr_vs_etaPtim->Fill(femtoTrack->pMom().Pt(),femtoTrack->pMom().Eta());
     }
-    
     //Track selection:
-    // variables for track cut:
-    Int_t N_TPC_fit_hits_min = 15;
-    Double_t DCA_max = 3.0;//cm
-    Double_t p_tot_prim_min = 0.15;//Gev/c
-    Double_t p_tot_prim_max = 1.5;//Gev/c
-    Double_t p_trans_prim_min = 0.15;
-    Double_t p_trans_prim_max = 1.5;
-    Double_t pseudo_rap_prim_max = 1.0;
+
     //track selection:
     Bool_t is_N_TPC_fit_hits_cut = femtoTrack->nHitsFit()>=N_TPC_fit_hits_min;
     if(!is_N_TPC_fit_hits_cut) continue;
@@ -808,10 +824,6 @@ gRandom->SetSeed(42);
     Bool_t is_pseudo_prm_cut = femtoTrack->isPrimary() &&
                             fabs(femtoTrack->pMom().Eta())<pseudo_rap_prim_max;
     if(!is_pseudo_prm_cut) continue;
-    Bool_t is_p_tot_prim_cut = femtoTrack->isPrimary() && 
-                            p_tot_prim_min < femtoTrack->pMom().Mag() &&
-                            femtoTrack->pMom().Mag()<p_tot_prim_max;
-    if(!is_p_tot_prim_cut) continue;
     Bool_t is_p_trans_prim_cut = femtoTrack->isPrimary() && 
                             p_trans_prim_min<femtoTrack->pMom().Pt() &&
                             femtoTrack->pMom().Pt()<p_trans_prim_max;
@@ -861,15 +873,30 @@ gRandom->SetSeed(42);
         Bool_t is_nSigma_Proton_TPC = fabs(femtoTrack->nSigmaProton())>nSigmaProton_min_TPC;
         if(!is_nSigma_Proton_TPC) continue;
         Bool_t is_nSigma_Electron_TPC = fabs(femtoTrack->nSigmaElectron())>nSigmaElectron_min_TPC;
-        if(is_nSigma_Electron_TPC)
-        {
+        if(!is_nSigma_Electron_TPC) continue;
           //QA histis filling after PID but after TPC only:
+          // std::cout<<femtoTrack->pMom().Mag2()<<std::endl;
+          // std::cout<<m_Pion<<std::endl;
+          // std::cout<<sqrt(femtoTrack->pMom().Mag2()+m_Pion*m_Pion)<<std::endl;
+          // std::cout<<femtoTrack->pMom().X()<<std::endl;
+          // std::cout<<femtoTrack->pMom().Y()<<std::endl;
+          // std::cout<<femtoTrack->pMom().Z()<<std::endl;
+          // std::cout<<femtoTrack->pMom().Eta()<<std::endl;
+          Double_t Energy = ROOT::Math::sqrt(femtoTrack->pMom().Mag2()+m_Pion*m_Pion);
+          Double_t Rapidity = My_Rapidity(femtoTrack->pMom().Z(),Energy);
+          //std::cout<<Rapidity<<std::endl;
+          hPrimaryRapidity->Fill(Rapidity);
+
           hNSigmPion_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaPion());
           hNSigmKaon_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaKaon());
           hNSigmProton_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaProton());
           hNSigmElectron_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ, femtoTrack->nSigmaElectron());
           hdEdx_vs_pPrimTotDevQ_cut_PID->Fill(PtotPrimQ,femtoTrack->dEdx());
           //let's fill c++ vector of Pions after TPC only:
+          //rapidity (y) cut:
+          if(Rapidity>rapidity_mid_min && Rapidity<rapidity_mid_max)
+          {
+          hPrimaryRapidity_cut->Fill(Rapidity);
           Double_t temp_pion_Energy_TPC_ONLY = sqrt(femtoTrack->pMom().Mag2()+m_Pion*m_Pion);
           My_LorenzVector temp_four_vector(femtoTrack->pMom().Px(), femtoTrack->pMom().Py(), 
                               femtoTrack->pMom().Pz(), temp_pion_Energy_TPC_ONLY);
