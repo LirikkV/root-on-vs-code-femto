@@ -60,28 +60,39 @@
 #include "StFemtoPhysicalHelix.h"
 #include "StRefMultCorr.h"
 
+//What energy?
+// 7.7 GeV  - 0 
+// 19.6 GeV - 1
+// 200 GeV  - 2
+const Int_t Collision_Energy_Sqrt_SNN_CONSTANT_SWITCH = 2;
+
+// variables for event cut:
+const Double_t Vtx_r_Max = 2.0;  // cm
+const Double_t Vtx_z_Max_Table[] = {70.0, 30.0, 30.0};
+const Double_t Vtx_z_Max = Vtx_z_Max_Table[Collision_Energy_Sqrt_SNN_CONSTANT_SWITCH];
+
 //It's better use ROOT::Math::LorentzVector instead of TLorenzVector
 const Double_t m_Pion = 0.13957039;//GeV
 using My_LorenzVector = ROOT::Math::PxPyPzEVector;
 
-  //for mixing events:
-  // Vz: 4 cuts; Vz from -40 to 40
-  // refMult: 10 cuts; RefMult from 0 to 600
-  const Int_t N_hist_types_3D = 3; // A or B or B_weighted
-  const Int_t N_hist_types_1D = 2; //A or B
-  const Int_t N_Charge = 2; // 0 <-> Pi_Plus; 1 <-> Pi_Minus
-  const Int_t N_Bins_Kt = 4;
-  const Int_t N_Bins_Centr = 9; 
-  const Int_t nVzCuts = 4;
-  const Int_t nRefMultCuts = 10;
-  const Double_t VzBins[nVzCuts+1] = {-40., -20., 0., 20., 40.};
-  const Double_t RefMultBins[nRefMultCuts+1] = {0.,60.,120.,180.,240.,300.,360.,420.,480.,540.,600};
+// for mixing events:
+//  Vz: 4 cuts; Vz from -40 to 40
+//  refMult: 10 cuts; RefMult from 0 to 600
+const Int_t N_hist_types_3D = 3; // A or B or B_weighted
+const Int_t N_hist_types_1D = 2; // A or B
+const Int_t N_Charge = 2;        // 0 <-> Pi_Plus; 1 <-> Pi_Minus
+const Int_t N_Bins_Kt = 4;
+const Int_t N_Bins_Centr = 9;
+const Int_t nVzCuts = 4;
+const Int_t nRefMultCuts = 10;
+const Double_t VzBins[nVzCuts + 1] = {-40., -20., 0., 20., 40.};
+const Double_t RefMultBins[nRefMultCuts + 1] = {0., 60., 120., 180., 240., 300., 360., 420., 480., 540., 600};
 
-  // // [0.15,0.25]GeV/c, [0.25,0.35] GeV/c, [0.35,0.45] GeV/c, [0.45,0.6] GeV/c.
-  const Double_t KtBins[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.60}; //GeV/c
-  const Int_t CentrBins[N_Bins_Centr+1] = {0,1,2,3,4,5,6,7,8}; // 0 - less central; 8 - most central
-  
-  const Int_t BUFFER_SIZE = 5;
+// // [0.15,0.25]GeV/c, [0.25,0.35] GeV/c, [0.35,0.45] GeV/c, [0.45,0.6] GeV/c.
+const Double_t KtBins[N_Bins_Kt + 1] = {0.15, 0.25, 0.35, 0.45, 0.60}; // GeV/c
+const Int_t CentrBins[N_Bins_Centr + 1] = {0, 1, 2, 3, 4, 5, 6, 7, 8}; // 0 - less central; 8 - most central
+
+const Int_t BUFFER_SIZE = 5;
 
 struct My_ParticleTrackInfo{
   My_LorenzVector p4;
@@ -709,9 +720,6 @@ gRandom->SetSeed(42);
     hVtxZ->Fill( pVtx.Z() );
 
     // Lirikk's cuts:
-    // variables for event cut:
-    double_t Vtx_r_Max = 2.0;  // cm
-    double_t Vtx_z_Max = 40.0; // cm
 
     //Centrality:
     Int_t runId = event->runId();
@@ -943,7 +951,7 @@ gRandom->SetSeed(42);
 
     //}//end of TOF + TPC
     }
-    
+
     }//end of track selection
     } //for(Int_t iTrk=0; iTrk<nTracks; iTrk++)
 
