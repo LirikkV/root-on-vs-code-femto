@@ -722,12 +722,13 @@ gRandom->SetSeed(42);
   mRefMultCorrUtil->setVerbose(kFALSE);
 
   // Loop over events
-  for(Long64_t iEvent=0; iEvent<events2read; iEvent++) {
+    for(Long64_t iEvent=0; iEvent<events2read; iEvent++) {
     if(iEvent%1000==0)
     {
     std::cout << "Working on event #[" << (iEvent+1)
 	      << "/" << events2read << "]" << std::endl;
     }
+
     // for(Long64_t iEvent=0; iEvent<100; iEvent++) {
     // std::cout << "Working on event #[" << (iEvent+1)
 	  //     << "/" << events2read << "]" << std::endl;
@@ -842,7 +843,6 @@ gRandom->SetSeed(42);
       Double_t PtotPrimQ = (femtoTrack->pMom().Mag())/(femtoTrack->charge());
 
       //constants for PID:
-      Double_t p_tot_prim_mid_PID = 0.55;//Gev/c
       Double_t one_over_beta_delta_max = 0.015;
       Float_t nSigmaPion_max_TOF = 3.0;
       Double_t m2_min = -0.05;//Gev^2/c^4
@@ -860,11 +860,8 @@ gRandom->SetSeed(42);
       hNSigmElectron_vs_pPrimTotDevQ->Fill(PtotPrimQ, femtoTrack->nSigmaElectron());
       hdEdx_vs_pPrimTotDevQ->Fill(PtotPrimQ, femtoTrack->dEdx());
       
-      Bool_t is_TPC_momenta_range = femtoTrack->pMom().Mag()<p_tot_prim_mid_PID;
-      Bool_t is_TPC_TOF_momenta_range = femtoTrack->isTofTrack() && p_tot_prim_mid_PID<=femtoTrack->pMom().Mag();
       //TPC only PID:
-      if(is_TPC_momenta_range) //p_min already set by track choise
-      {
+      //p_min already set by track choise
 
         Bool_t is_nSigma_Pion_TPC = fabs(femtoTrack->nSigmaPion())<nSigmaPion_max_TPC;
         if(!is_nSigma_Pion_TPC) continue;
@@ -921,8 +918,7 @@ gRandom->SetSeed(42);
           }
         }
 
-      }//end of TPC only
-
+      //end of TPC only
     {//   //TPC+TOF PID:
     //   else if( is_TPC_TOF_momenta_range ) //p_max already set by track choise
     //   {
