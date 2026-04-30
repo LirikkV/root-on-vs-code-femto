@@ -64,12 +64,23 @@
 // 7.7 GeV  - 0 
 // 19.6 GeV - 1
 // 200 GeV  - 2
-const Int_t Collision_Energy_Sqrt_SNN_CONSTANT_SWITCH = 2;
+const Int_t Energy_SWITCH = 2;
 
-// variables for event cut:
+// Tables for variables for event cut with different energies:
 const Double_t Vtx_r_Max = 2.0;  // cm
-const Double_t Vtx_z_Max_Table[] = {70.0, 30.0, 30.0};
-const Double_t Vtx_z_Max = Vtx_z_Max_Table[Collision_Energy_Sqrt_SNN_CONSTANT_SWITCH];
+const Double_t Vtx_z_Max_Table[] = {70.0, 30.0, 30.0}; //cm
+const Int_t nVzCuts_Table[] = {28,12,12};// 28 = ( 70/5 )*2; 12 = 30/5 *2 5 cm - for mixing events
+
+const Double_t VzBins_Table_0[] = {-70.,-65.,-60.,-55.,-50.,-45.,-40.,-35.,-30.,-25.,-20.,-15.,-10.,-5., 0.,
+    5.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.};                                //for 7.7 GeV
+const Double_t VzBins_Table_1[] = {-30., -25.,-20.,-15.,-10.,-5., 0.,5.,10.,15.,20.,25.,30};//for 19.6 GeV
+const Double_t VzBins_Table_2[] = {-30., -25.,-20.,-15.,-10.,-5., 0.,5.,10.,15.,20.,25.,30};//for 200 GeV
+
+struct VzBins_Table_info{
+  const Double_t* vz_bins;
+};
+
+const VzBins_Table_info VzBins_Table[]={VzBins_Table_0,VzBins_Table_1,VzBins_Table_2};
 
 //It's better use ROOT::Math::LorentzVector instead of TLorenzVector
 const Double_t m_Pion = 0.13957039;//GeV
@@ -83,9 +94,11 @@ const Int_t N_hist_types_1D = 2; // A or B
 const Int_t N_Charge = 2;        // 0 <-> Pi_Plus; 1 <-> Pi_Minus
 const Int_t N_Bins_Kt = 4;
 const Int_t N_Bins_Centr = 9;
-const Int_t nVzCuts = 4;
 const Int_t nRefMultCuts = 10;
-const Double_t VzBins[nVzCuts + 1] = {-40., -20., 0., 20., 40.};
+const Double_t Vtx_z_Max = Vtx_z_Max_Table[Energy_SWITCH];
+const Int_t nVzCuts = nVzCuts_Table[Energy_SWITCH];
+const Double_t* VzBins = VzBins_Table[Energy_SWITCH].vz_bins;
+//const Double_t VzBins[nVzCuts + 1] = {-40., -20., 0., 20., 40.};
 const Double_t RefMultBins[nRefMultCuts + 1] = {0., 60., 120., 180., 240., 300., 360., 420., 480., 540., 600};
 
 // // [0.15,0.25]GeV/c, [0.25,0.35] GeV/c, [0.35,0.45] GeV/c, [0.45,0.6] GeV/c.
@@ -344,6 +357,11 @@ void comparePionsFillHistB(const std::vector<My_ParticleTrackInfo>& new_Pions_Ar
 
 
 int main(int argc, char* argv[]) {
+std::cout<<"Vz bins borders:"<<std::endl;
+for(int i=0;i<=nVzCuts;i++)
+{
+std::cout<<VzBins[i]<<std::endl;
+}
 //for track shuffle:
 gRandom->SetSeed(42);
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
