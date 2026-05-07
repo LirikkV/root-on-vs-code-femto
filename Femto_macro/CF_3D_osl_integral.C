@@ -13,9 +13,9 @@ const Int_t N_hist_types_3D_integral = 2; // A or B
 const Int_t N_Charge = 2; // 0 <-> Pi_Plus; 1 <-> Pi_Minus
 
 
-const TString Input_File = "/home/kirill/root-on-vs-code/Femto_input/out_Au_Au200_23_04_FMRW.root";
-const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/23_04_FMRW/out_Au_Au200_23_04_FMR_proseed_3D_integral.root";
-const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/23_04_FMRW/";
+const TString Input_File = "/home/kirill/root-on-vs-code/Femto_input/out_Au_Au200_07_05_FMRW_article.root";
+const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/07_05_FMRW_article/out_Au_Au200_07_05_FMR_pr_3D_integral.root";
+const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/07_05_FMRW_article/";
 const TString OSL_xyz[3] {"x","y","z"};
 const TString OSL_names[3] {"out","side","long"};
 const TString hist_3D_Name_AB[N_hist_types_3D_integral][N_Charge] =

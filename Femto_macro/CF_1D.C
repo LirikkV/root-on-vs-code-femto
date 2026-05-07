@@ -16,9 +16,9 @@ const Int_t N_Bins_Centr = 9;
 
 const Double_t KtBins[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.60};
 
-const TString Input_File = "/home/kirill/root-on-vs-code/Femto_input/out_Au_Au200_23_04_FMRW.root";
-const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/23_04_FMRW/out_Au_Au200_23_04_FMR_proseed_1D_integral_and_cuts.root";
-const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/23_04_FMRW/";
+const TString Input_File = "/home/kirill/root-on-vs-code/Femto_input/out_Au_Au200_07_05_FMRW_article.root";
+const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/07_05_FMRW_article/out_Au_Au200_07_05_FMRW_article_pr_1D_integral_and_cuts.root";
+const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/07_05_FMRW_article/";
 
 void CF_1D()
 {
