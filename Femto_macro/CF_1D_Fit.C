@@ -22,7 +22,11 @@ const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/07_05_FMR
 const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/07_05_FMRW_article/";
 
 //Fit function:
-
+Double_t fitf(Double_t *x,Double_t *par)
+{
+    Double_t fitval = par[0]*(1+par[1]*TMath::Exp(-(par[2]*par[2]*x[0]*x[0])/(0.197327*0.197327)));
+    return fitval;
+}
 
 void CF_1D_Fit()
 {
@@ -47,11 +51,13 @@ const Double_t hbar_c = 197.327/1000.; //GeV*Fm
 hCF_Pi_Plus->GetXaxis()->SetRangeUser(x1_fit_range,x2_fit_range);
 
 TF1 *f1 = new TF1("f1","[0]*(1+[1]*exp(-([2]*[2]*x*x)/(0.197327*0.197327)))",x1_fit_range,x2_fit_range);
-f1->SetParameter(0,N_start);
-f1->SetParameter(1,Lambda_start);
-f1->SetParameter(2,R_inv_start);
-hCF_Pi_Plus->Fit("f1");
-hCF_Pi_Minus->Fit("f1");
+TF1 *fMy = new TF1("f2",fitf,x1_fit_range,x2_fit_range,3);
+
+fMy->SetParameter(1,Lambda_start);
+fMy->SetParameter(0,N_start);
+fMy->SetParameter(2,R_inv_start);
+hCF_Pi_Plus->Fit("f2");
+hCF_Pi_Minus->Fit("f2");
 //Write all:
 TFile *f_out = new TFile(Output_File, "RECREATE");
 hCF_Pi_Plus->Write();
