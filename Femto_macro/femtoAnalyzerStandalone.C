@@ -68,7 +68,7 @@
 // 7.7 GeV  - 0 
 // 19.6 GeV - 1
 // 200 GeV  - 2
-const Int_t Energy_SWITCH = 2; //RECOMPILE!!!!!
+const Int_t Energy_SWITCH = 0; //RECOMPILE!!!!!
 
 // Tables for variables for event cut with different energies:
 const Double_t Vtx_r_Max = 2.0;  // cm
@@ -843,10 +843,10 @@ gRandom->SetSeed(42);
       Double_t PtotPrimQ = (femtoTrack->pMom().Mag())/(femtoTrack->charge());
 
       //constants for PID:
-      Double_t one_over_beta_delta_max = 0.015;
-      Float_t nSigmaPion_max_TOF = 3.0;
-      Double_t m2_min = -0.05;//Gev^2/c^4
-      Double_t m2_max = 0.08; //Gev^2/c^4
+      //Double_t one_over_beta_delta_max = 0.015;
+      //Float_t nSigmaPion_max_TOF = 3.0;
+      //Double_t m2_min = -0.05;//Gev^2/c^4
+      //Double_t m2_max = 0.08; //Gev^2/c^4
       Float_t nSigmaPion_max_TPC = 2.0;
       Float_t nSigmaElectron_min_TPC = 2.0;
       Float_t nSigmaKaon_min_TPC = 2.0;
@@ -1011,7 +1011,7 @@ gRandom->SetSeed(42);
     //instead of cycles better use BinarySearch to search for interval our event belongs to
 
     Int_t iVz = TMath::BinarySearch(nVzCuts + 1, VzBins, (Double_t)pVtx.Z());
-    Int_t iRefM = TMath::BinarySearch(nRefMultCuts +1, RefMultBins, (Double_t)event->refMult());
+    //Int_t iRefM = TMath::BinarySearch(nRefMultCuts +1, RefMultBins, (Double_t)event->refMult());
 
     //check indexies for preventing segmentation fault:
     if(iVz>=0 && iVz<nVzCuts && cent9>=0 && cent9<N_Bins_Centr)
