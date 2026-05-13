@@ -444,7 +444,7 @@ gRandom->SetSeed(42);
   // Event
   TH1F *hRefMult = new TH1F("hRefMult",
 			    "Reference multiplicity;refMult",
-			    500, -0.5, 600.);
+			    601, -1., 600.);
   TH2F *hVtxXvsY = new TH2F("hVtxXvsY",
 			    "Vtx XvsY",
 			    200,-3.5,3.5,200,-3.5,3.5);
@@ -541,33 +541,33 @@ gRandom->SetSeed(42);
 			    "nSigma(Electron) vs P_prim_tot/q after cut;;nSigma",
 			    200,-2.,2.,200,-40.,40.);
 
-  TH2F *h1_OverBeta_vs_pPrimTotDevQ = new TH2F("1_OverBeta_vs_pPrimTotDevQ",
-			    "1/beta vs P_prim_tot/q;;1/beta",
-			    200,-2.,2.,200,0.5,2.0);
-  TH2F *h1_OverBeta_vs_pPrimTotDevQ_cut_PID = new TH2F("1_OverBeta_vs_pPrimTotDevQ_cut_PID",
-			    "1/beta vs P_prim_tot/q after PID;;1/beta",
-			    400,-2.,2.,200,0.5,2.0);
+  // TH2F *h1_OverBeta_vs_pPrimTotDevQ = new TH2F("1_OverBeta_vs_pPrimTotDevQ",
+	// 		    "1/beta vs P_prim_tot/q;;1/beta",
+	// 		    200,-2.,2.,200,0.5,2.0);
+  // TH2F *h1_OverBeta_vs_pPrimTotDevQ_cut_PID = new TH2F("1_OverBeta_vs_pPrimTotDevQ_cut_PID",
+	// 		    "1/beta vs P_prim_tot/q after PID;;1/beta",
+	// 		    400,-2.,2.,200,0.5,2.0);
   
-  TH2F *hm2_vs_pPrimTotDevQ = new TH2F("hm2_vs_pPrimTotDevQ",
-			    "m^2 vs P_prim_tot/q;;m^2(Gev/c)",
-			    400,-2.,2.,200,-0.1,0.1);
-  TH2F *hm2_vs_pPrimTotDevQ_cut_PID = new TH2F("hm2_vs_pPrimTotDevQ_cut_PID",
-			    "m^2 vs P_prim_tot/q after PID;;m^2(Gev/c)",
-			    400,-2.,2.,200,-0.1,0.1);
+  // TH2F *hm2_vs_pPrimTotDevQ = new TH2F("hm2_vs_pPrimTotDevQ",
+	// 		    "m^2 vs P_prim_tot/q;;m^2(Gev/c)",
+	// 		    400,-2.,2.,200,-0.1,0.1);
+  // TH2F *hm2_vs_pPrimTotDevQ_cut_PID = new TH2F("hm2_vs_pPrimTotDevQ_cut_PID",
+	// 		    "m^2 vs P_prim_tot/q after PID;;m^2(Gev/c)",
+	// 		    400,-2.,2.,200,-0.1,0.1);
 
-  TH2F *hTEST_P2_pPrimTotDevQ = new TH2F("hTEST_P2_pPrimTotDevQ",
-			    "P_tot^2 vs P_prim_tot/q;;m^2(Gev/c)",
-			    400,-2.,2.,200, 0.0,2.5);
-  TH2F *hTEST_Beta_pPrimTotDevQ = new TH2F("hTEST_sqrt_Beta_pPrimTotDevQ",
-			    "(1/Beta^2-1) vs P_prim_tot/q;;m^2(Gev/c)",
-			    400,-2.,2.,200,-0.1,0.1);
+  // TH2F *hTEST_P2_pPrimTotDevQ = new TH2F("hTEST_P2_pPrimTotDevQ",
+	// 		    "P_tot^2 vs P_prim_tot/q;;m^2(Gev/c)",
+	// 		    400,-2.,2.,200, 0.0,2.5);
+  // TH2F *hTEST_Beta_pPrimTotDevQ = new TH2F("hTEST_sqrt_Beta_pPrimTotDevQ",
+	// 		    "(1/Beta^2-1) vs P_prim_tot/q;;m^2(Gev/c)",
+	// 		    400,-2.,2.,200,-0.1,0.1);
   
-  TH2F *h1_OverBetaDelta_vs_pPrimTotDevQ = new TH2F("1_OverBetaDelta_vs_pPrimTotDevQ",
-			    "1/beta - 1/beta_exp vs P_prim_tot/q;;1/beta - 1/beta_exp",
-			    200,-2.,2.,200,-0.2,1.2);
-  TH2F *h1_OverBetaDelta_vs_pPrimTotDevQ_cut_PID = new TH2F("1_OverBetaDelta_vs_pPrimTotDevQ_cut_PID",
-			    "1/beta - 1/beta_exp vs P_prim_tot/q after PID;;1/beta - 1/beta_exp",
-			    400,-2.,2.,200,-0.2,1.2);
+  // TH2F *h1_OverBetaDelta_vs_pPrimTotDevQ = new TH2F("1_OverBetaDelta_vs_pPrimTotDevQ",
+	// 		    "1/beta - 1/beta_exp vs P_prim_tot/q;;1/beta - 1/beta_exp",
+	// 		    200,-2.,2.,200,-0.2,1.2);
+  // TH2F *h1_OverBetaDelta_vs_pPrimTotDevQ_cut_PID = new TH2F("1_OverBetaDelta_vs_pPrimTotDevQ_cut_PID",
+	// 		    "1/beta - 1/beta_exp vs P_prim_tot/q after PID;;1/beta - 1/beta_exp",
+	// 		    400,-2.,2.,200,-0.2,1.2);
 
   TH2F *hdEdx_vs_pPrimTotDevQ = new TH2F("hdEdx_vs_pPrimTotDevQ",
 			    "dE/dx vs P_prim_tot/q;;dE/dx(keV/cm)",
@@ -583,13 +583,13 @@ gRandom->SetSeed(42);
 			    "p_prim_T vs eta_prim after track cut;p_T;eta",
 			    200,-0.5,2.,200,-4.,4.);
         
-  TH2F *hTEST2DpPrimTr_vs_etaPtim_equal_P = new TH2F("hTEST2DpPrimTr_vs_etaPtim_equal_P",
-			    "p_prim_T vs eta_prim after track cut with equal P;p_T;eta",
-			    200,-0.5,2.,200,-4.,4.);
+  // TH2F *hTEST2DpPrimTr_vs_etaPtim_equal_P = new TH2F("hTEST2DpPrimTr_vs_etaPtim_equal_P",
+	// 		    "p_prim_T vs eta_prim after track cut with equal P;p_T;eta",
+	// 		    200,-0.5,2.,200,-4.,4.);
 
   // BTof pid traits
-  TH1F *hTofBeta = new TH1F("hTofBeta", "BTofPidTraits #beta;#beta",
-			    2000, 0., 2.);
+  // TH1F *hTofBeta = new TH1F("hTofBeta", "BTofPidTraits #beta;#beta",
+	// 		    2000, 0., 2.);
 
   //Correlation function:
 
