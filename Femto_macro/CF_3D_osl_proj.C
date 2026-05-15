@@ -27,7 +27,11 @@ const Int_t N_Bins_Centr = 9;
 
 const Int_t N_of_Pars_for_fit = 5;
 
-//const Double_t KtBins[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.60};
+const TString Charged_particles_pairs_titles[N_Charge] = {"Pi+Pi+","Pi-Pi-"};
+const TString Centrality_region_titles[N_Bins_Centr] = {"70-80%","60-70%","50-60%","40-50%","30-40%","20-30%","10-20%","5-10%","0-5%"};
+const TString Kt_bins_titles[N_Bins_Kt] = {"[0.15, 0.25]","[0.25, 0.35]","[0.35, 0.45]","[0.45, 0.60]"};
+
+//const Double_t KtBins_Borders[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.60};
 
 const TString Input_File = "/home/kirill/root-on-vs-code/Femto_input/out_Au_Au200_07_05_FMRW_article.root";
 const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/15_05_FMRW_article/out_Au_Au200_15_05_FMR_pr_3D_proj.root";
@@ -500,11 +504,42 @@ for (Int_t iOSL = 0; iOSL < 3; iOSL++)
 }
 
 //Drawing projections:
-TCanvas *c_3D_8_3_X= new TCanvas("c_3D_0_0_8_3_X", "Canvas",1920,1080);
-TCanvas *c_3D_8_3_Y= new TCanvas("c_3D_0_0_8_3_Y", "Canvas",1920,1080);
-TCanvas *c_3D_8_3_Z= new TCanvas("c_3D_0_0_8_3_Z", "Canvas",1920,1080);
 
-c_3D_8_3_X->cd();
+TCanvas* c_3D_Proj_Arr[N_Charge][N_Bins_Centr][N_Bins_Kt][3];
+
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+                    for(Int_t iOSL =0;iOSL<3;iOSL++)
+                    {
+                        TString canv_name = TString::Format("c_3D_%d_%d_%d_%d",iCh,iCent,iKt,iOSL);
+                        TString canv_title = Charged_particles_pairs_titles[iCh] +", Centr: "+ Centrality_region_titles[iCent]
+                        + ", Kt: " + Kt_bins_titles[iKt] +", "+ OSL_names[iOSL]+" projection";
+                        c_3D_Proj_Arr[iCh][iCent][iKt][iOSL] = new TCanvas(canv_name, canv_title,1920,1080);
+
+
+                        c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->cd();
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->SetTitle(c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->GetTitle());
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Draw();
+
+                        h_Fit_Coul_Proj[0][iOSL]->SetLineColor(kRed);
+                        h_Fit_Coul_Proj[0][iOSL]->Draw("L SAME");
+
+                        h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL]->SetLineColor(kGreen);
+                        h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Draw("L SAME");
+
+                        //c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->SaveAs(Output_Folder + "c_3D_8_1_X.pdf");
+                        c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->Write();
+                    }
+        }
+    }
+}
+
+c_3D_Proj_Arr[0][8][1][0]->cd();
+h_Arr_3D_Projects_OSL[0][0][8][1][0]->SetTitle(c_3D_Proj_Arr[0][8][1][0]->GetTitle());
 h_Arr_3D_Projects_OSL[0][0][8][1][0]->Draw();
 
 h_Fit_Coul_Proj[0][0]->SetLineColor(kRed);
@@ -513,10 +548,12 @@ h_Fit_Coul_Proj[0][0]->Draw("L SAME");
 h_Fit_No_Coul_Proj[0][0][8][1][0]->SetLineColor(kGreen);
 h_Fit_No_Coul_Proj[0][0][8][1][0]->Draw("L SAME");
 
-c_3D_8_3_X->SaveAs(Output_Folder + "c_3D_8_3_X.pdf");
-c_3D_8_3_X->Write();
+c_3D_Proj_Arr[0][8][1][0]->SaveAs(Output_Folder + "c_3D_8_1_X.pdf");
+//c_3D_Proj_Arr[0][8][1][0]->Write();
 
-c_3D_8_3_Y->cd();
+
+c_3D_Proj_Arr[0][8][1][1]->cd();
+h_Arr_3D_Projects_OSL[0][0][8][1][1]->SetTitle(c_3D_Proj_Arr[0][8][1][1]->GetTitle());
 h_Arr_3D_Projects_OSL[0][0][8][1][1]->Draw();
 
 h_Fit_Coul_Proj[0][1]->SetLineColor(kRed);
@@ -525,10 +562,12 @@ h_Fit_Coul_Proj[0][1]->Draw("L SAME");
 h_Fit_No_Coul_Proj[0][0][8][1][1]->SetLineColor(kGreen);
 h_Fit_No_Coul_Proj[0][0][8][1][1]->Draw("L SAME");
 
-c_3D_8_3_Y->SaveAs(Output_Folder + "c_3D_8_3_Y.pdf");
-c_3D_8_3_Y->Write();
+c_3D_Proj_Arr[0][8][1][1]->SaveAs(Output_Folder + "c_3D_8_1_Y.pdf");
+//c_3D_Proj_Arr[0][8][1][1]->Write();
 
-c_3D_8_3_Z->cd();
+
+c_3D_Proj_Arr[0][8][1][2]->cd();
+h_Arr_3D_Projects_OSL[0][0][8][1][2]->SetTitle(c_3D_Proj_Arr[0][8][1][2]->GetTitle());
 h_Arr_3D_Projects_OSL[0][0][8][1][2]->Draw();
 
 h_Fit_Coul_Proj[0][2]->SetLineColor(kRed);
@@ -537,8 +576,8 @@ h_Fit_Coul_Proj[0][2]->Draw("SAME L");
 h_Fit_No_Coul_Proj[0][0][8][1][2]->SetLineColor(kGreen);
 h_Fit_No_Coul_Proj[0][0][8][1][2]->Draw("L SAME");
 
-c_3D_8_3_Z->SaveAs(Output_Folder + "c_3D_8_3_Z.pdf");
-c_3D_8_3_Z->Write();
+c_3D_Proj_Arr[0][8][1][2]->SaveAs(Output_Folder + "c_3D_8_1_Z.pdf");
+//c_3D_Proj_Arr[0][8][1][2]->Write();
 
 
 
