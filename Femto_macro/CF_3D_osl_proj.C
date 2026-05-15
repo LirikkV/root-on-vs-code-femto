@@ -60,7 +60,7 @@ Double_t fitf_No_Coulomb(Double_t *x, Double_t *par)
 
 
 //3D map of q_inv !!!fill it in code!!!
-TH3F* h_Map_3D = nullptr;
+TH3F* h_Map_3D[N_Charge][N_Bins_Centr][N_Bins_Kt];
 
 Double_t fitf_Coulomb(Double_t *x, Double_t *par)
 {
@@ -249,8 +249,10 @@ for (Int_t i = 1; i <= N_bins_K_coul; i++)
 
 
 //Fit params:
-Double_t par[N_Charge][N_Bins_Centr][N_Bins_Kt][N_of_Pars_for_fit];
+Double_t par_No_Coul[N_Charge][N_Bins_Centr][N_Bins_Kt][N_of_Pars_for_fit];
+Double_t par_Coul[N_Charge][N_Bins_Centr][N_Bins_Kt][N_of_Pars_for_fit];
 TF3* f_No_Coul_Arr[N_Charge][N_Bins_Centr][N_Bins_Kt];
+TF3* f_Coul_Arr[N_Charge][N_Bins_Centr][N_Bins_Kt];
 
 const Double_t x1_fit_range = -0.20;
 const Double_t x2_fit_range = 0.20;
@@ -299,39 +301,52 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             f_No_Coul_Arr[iCh][iCent][iKt]->SetNpx(20);
             h_Arr_3D[0][iCh][iCent][iKt]->Fit(fitf_name);
 
-            f_No_Coul_Arr[iCh][iCent][iKt]->GetParameters(par[iCh][iCent][iKt]);
+            f_No_Coul_Arr[iCh][iCent][iKt]->GetParameters(par_No_Coul[iCh][iCent][iKt]);
 }}}
 
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
 
-TF3 *f_Coul = new TF3("f_Coul", fitf_Coulomb, x1_fit_range, x2_fit_range, x1_fit_range, x2_fit_range, x1_fit_range, x2_fit_range, 5);
-f_Coul->SetParameter(0, N_start);
-f_Coul->SetParameter(1, Lambda_start);
+            h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->SetRangeUser(x1_fit_range, x2_fit_range);
+            h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->SetRangeUser(x1_fit_range, x2_fit_range);
+            h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->SetRangeUser(x1_fit_range, x2_fit_range);
 
-f_Coul->SetParameter(2, R_o_2_start);
-f_Coul->SetParameter(3, R_s_2_start);
-f_Coul->SetParameter(4, R_l_2_start);
+            TString fitf_name = TString::Format("f_Coul_%d_%d_%d", iCh, iCent, iKt);
+            f_Coul_Arr[iCh][iCent][iKt]= new TF3(fitf_name, fitf_Coulomb,  x1_fit_range, x2_fit_range, 
+                                                                            x1_fit_range, x2_fit_range, 
+                                                                            x1_fit_range, x2_fit_range, 5);
 
-// f_Coul->SetParameter(5, R_os_2_start);
-// f_Coul->SetParameter(6, R_ol_2_start);
-f_Coul->SetParLimits(0,0.,2.0);
+            // f_No_Coul->FixParameter(0,N_start);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParameter(0, N_start);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParameter(1, Lambda_start);
 
-f_Coul->SetParLimits(1,0.,1.);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParameter(2, R_o_2_start);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParameter(3, R_s_2_start);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParameter(4, R_l_2_start);
 
-f_Coul->SetParLimits(2,0.01,200.);
-f_Coul->SetParLimits(3,0.01,200.);
-f_Coul->SetParLimits(4,0.01,200.);
+            // f_No_Coul->SetParameter(5, R_os_2_start);
+            // f_No_Coul->SetParameter(6, R_ol_2_start);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(0, 0., 2.);
 
-//!!! fill Map hist !!!
-h_Map_3D = (TH3F*)h_Arr_3D[2][0][8][1]->Clone("h_Map_3D");
-h_Map_3D->Divide(h_Arr_3D[1][0][8][1]);
+            f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(1, 0., 1.);
 
-f_Coul->SetNpx(20);
-h_Arr_3D[0][0][8][1]->Fit("f_Coul");
+            f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(2, 0.01, 200.);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(3, 0.01, 200.);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(4, 0.01, 200.);
 
-// TFitResultPtr fitres = h_Arr_3D[0][0][8][1]->Fit("f_Coul");
-// fitres->PrintCovMatrix(std::cout);
+            //!!! fill Map hist !!!
+            h_Map_3D[iCh][iCent][iKt] = (TH3F*)h_Arr_3D[2][iCh][iCent][iKt]->Clone(TString::Format("h_Map_3D_%d_%d_%d",iCh,iCent,iKt));
+            h_Map_3D[iCh][iCent][iKt]->Divide(h_Arr_3D[1][iCh][iCent][iKt]);
 
+            f_Coul_Arr[iCh][iCent][iKt]->SetNpx(20);
+            h_Arr_3D[0][iCh][iCent][iKt]->Fit(fitf_name);
 
+            f_Coul_Arr[iCh][iCent][iKt]->GetParameters(par_No_Coul[iCh][iCent][iKt]);
+}}}
 
 
 TFile *f_out = new TFile(Output_File, "RECREATE");
