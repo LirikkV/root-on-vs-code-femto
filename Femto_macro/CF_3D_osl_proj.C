@@ -274,8 +274,9 @@ const Double_t Lambda_start = 0.3;
 const Double_t R_o_start = 5.;
 const Double_t R_s_start = 5.;
 const Double_t R_l_start = 5.;
-// const Double_t R_os_2_start = 4.0;
-// const Double_t R_ol_2_start = 4.0;
+
+const Double_t R_os_start = 4.0;
+const Double_t R_ol_start = 4.0;
 
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 {
@@ -291,7 +292,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             TString fitf_name = TString::Format("f_No_Coul_%d_%d_%d", iCh, iCent, iKt);
             f_No_Coul_Arr[iCh][iCent][iKt]= new TF3(fitf_name, fitf_No_Coulomb,  x1_fit_range, x2_fit_range, 
                                                                             x1_fit_range, x2_fit_range, 
-                                                                            x1_fit_range, x2_fit_range, 5);
+                                                                            x1_fit_range, x2_fit_range, N_of_Pars_for_fit);
 
             // f_No_Coul->FixParameter(0,N_start);
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(0, N_start);
@@ -301,14 +302,20 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(3, R_s_start);
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(4, R_l_start);
 
-            // f_No_Coul->SetParameter(5, R_os_2_start);
-            // f_No_Coul->SetParameter(6, R_ol_2_start);
+            // f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(5, R_os_start);
+            // f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(6, R_ol_start);
+
+
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(0, 0., 2.);
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(1, 0., 1.);
 
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(2, 0.01, 15.);
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(3, 0.01, 15.);
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(4, 0.01, 15.);
+
+            // f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(5, 0.01, 15.);
+            // f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(6, 0.01, 15.);
+
 
             f_No_Coul_Arr[iCh][iCent][iKt]->SetNpx(20);
             h_Arr_3D[0][iCh][iCent][iKt]->Fit(fitf_name);
@@ -337,7 +344,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             TString fitf_name = TString::Format("f_Coul_%d_%d_%d", iCh, iCent, iKt);
             f_Coul_Arr[iCh][iCent][iKt]= new TF3(fitf_name, fitf_Coulomb,  x1_fit_range, x2_fit_range, 
                                                                             x1_fit_range, x2_fit_range, 
-                                                                            x1_fit_range, x2_fit_range, 5);
+                                                                            x1_fit_range, x2_fit_range, N_of_Pars_for_fit);
 
             // f_No_Coul->FixParameter(0,N_start);
             f_Coul_Arr[iCh][iCent][iKt]->SetParameter(0, N_start);
@@ -347,8 +354,10 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             f_Coul_Arr[iCh][iCent][iKt]->SetParameter(3, R_s_start);
             f_Coul_Arr[iCh][iCent][iKt]->SetParameter(4, R_l_start);
 
-            // f_No_Coul->SetParameter(5, R_os_2_start);
-            // f_No_Coul->SetParameter(6, R_ol_2_start);
+            // f_Coul_Arr[iCh][iCent][iKt]->SetParameter(5, R_os_start);
+            // f_Coul_Arr[iCh][iCent][iKt]->SetParameter(6, R_ol_start);
+
+
             f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(0, 0., 2.);
 
             f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(1, 0., 1.);
@@ -356,6 +365,9 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(2, 0.01, 15.);
             f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(3, 0.01, 15.);
             f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(4, 0.01, 15.);
+
+            // f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(5, 0.01, 15.);
+            // f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(6, 0.01, 15.);
 
             //!!! fill Map hist !!!
             h_Map_3D[iCh][iCent][iKt] = (TH3F*)h_Arr_3D[2][iCh][iCent][iKt]->Clone(TString::Format("h_Map_3D_%d_%d_%d",iCh,iCent,iKt));
@@ -600,7 +612,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                         leg->SetFillStyle(0);     // Transparent
 
                         //Entries in A:
-                        leg->AddEntry((TObject*)0, Form(" Entries in A: %.3f Millons", Entries_in_A_arr[iCh][iCent][iKt]/1000000.),"");
+                        leg->AddEntry((TObject*)0, Form(" Entries in A: %.3f Millions", Entries_in_A_arr[iCh][iCent][iKt]/1000000.),"");
                         // Gauss:
                         leg->AddEntry(h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL], "Gauss", "l");
 
