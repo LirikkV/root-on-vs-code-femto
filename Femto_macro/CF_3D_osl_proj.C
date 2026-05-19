@@ -267,11 +267,11 @@ TF3* f_Coul_Arr[N_Charge][N_Bins_Centr][N_Bins_Kt];
 
 const Double_t x1_fit_range = -0.20;
 const Double_t x2_fit_range = 0.20;
-const Double_t N_start = 0.997251;
-const Double_t Lambda_start = 0.31636;
-const Double_t R_o_2_start = 43.7445;
-const Double_t R_s_2_start = 19.1359;
-const Double_t R_l_2_start = 25.6675;
+const Double_t N_start = 1.;
+const Double_t Lambda_start = 0.3;
+const Double_t R_o_start = 5.;
+const Double_t R_s_start = 5.;
+const Double_t R_l_start = 5.;
 // const Double_t R_os_2_start = 4.0;
 // const Double_t R_ol_2_start = 4.0;
 
@@ -295,29 +295,30 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(0, N_start);
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(1, Lambda_start);
 
-            f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(2, R_o_2_start);
-            f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(3, R_s_2_start);
-            f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(4, R_l_2_start);
+            f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(2, R_o_start);
+            f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(3, R_s_start);
+            f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(4, R_l_start);
 
             // f_No_Coul->SetParameter(5, R_os_2_start);
             // f_No_Coul->SetParameter(6, R_ol_2_start);
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(0, 0., 2.);
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(1, 0., 1.);
 
-            f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(2, 0.01, 200.);
-            f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(3, 0.01, 200.);
-            f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(4, 0.01, 200.);
+            f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(2, 0.01, 15.);
+            f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(3, 0.01, 15.);
+            f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(4, 0.01, 15.);
 
             f_No_Coul_Arr[iCh][iCent][iKt]->SetNpx(20);
             h_Arr_3D[0][iCh][iCent][iKt]->Fit(fitf_name);
 
             f_No_Coul_Arr[iCh][iCent][iKt]->GetParameters(par_No_Coul[iCh][iCent][iKt]);
 
-            // const Double_t* errs = f_No_Coul_Arr[iCh][iCent][iKt]->GetParErrors();
-            // // Copying errors:
-            // for (Int_t p = 0; p < N_of_Pars_for_fit; ++p) {
-            //     par_No_Coul_Err[iCh][iCent][iKt][p] = errs[p];
-            // }
+            const Double_t* errs = f_No_Coul_Arr[iCh][iCent][iKt]->GetParErrors();
+            // Copying errors:
+            for (Int_t p = 0; p < N_of_Pars_for_fit; ++p) {
+                par_No_Coul_Err[iCh][iCent][iKt][p] = errs[p];
+            }
+            par_No_Coul_Chi_div_NDF[iCh][iCent][iKt] = f_No_Coul_Arr[iCh][iCent][iKt]->GetChisquare()/f_No_Coul_Arr[iCh][iCent][iKt]->GetNDF();
 }}}
 
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
@@ -340,9 +341,9 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             f_Coul_Arr[iCh][iCent][iKt]->SetParameter(0, N_start);
             f_Coul_Arr[iCh][iCent][iKt]->SetParameter(1, Lambda_start);
 
-            f_Coul_Arr[iCh][iCent][iKt]->SetParameter(2, R_o_2_start);
-            f_Coul_Arr[iCh][iCent][iKt]->SetParameter(3, R_s_2_start);
-            f_Coul_Arr[iCh][iCent][iKt]->SetParameter(4, R_l_2_start);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParameter(2, R_o_start);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParameter(3, R_s_start);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParameter(4, R_l_start);
 
             // f_No_Coul->SetParameter(5, R_os_2_start);
             // f_No_Coul->SetParameter(6, R_ol_2_start);
@@ -350,9 +351,9 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 
             f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(1, 0., 1.);
 
-            f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(2, 0.01, 200.);
-            f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(3, 0.01, 200.);
-            f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(4, 0.01, 200.);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(2, 0.01, 15.);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(3, 0.01, 15.);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(4, 0.01, 15.);
 
             //!!! fill Map hist !!!
             h_Map_3D[iCh][iCent][iKt] = (TH3F*)h_Arr_3D[2][iCh][iCent][iKt]->Clone(TString::Format("h_Map_3D_%d_%d_%d",iCh,iCent,iKt));
@@ -365,6 +366,15 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             h_Arr_3D[0][iCh][iCent][iKt]->Fit(fitf_name);
 
             f_Coul_Arr[iCh][iCent][iKt]->GetParameters(par_Coul[iCh][iCent][iKt]);
+
+            const Double_t* errs = f_Coul_Arr[iCh][iCent][iKt]->GetParErrors();
+            // Copying errors:
+            for (Int_t p = 0; p < N_of_Pars_for_fit; ++p) {
+                par_Coul_Err[iCh][iCent][iKt][p] = errs[p];
+            }
+
+            par_Coul_Chi_div_NDF[iCh][iCent][iKt] = f_Coul_Arr[iCh][iCent][iKt]->GetChisquare()/f_Coul_Arr[iCh][iCent][iKt]->GetNDF();
+
 }}}
 
 
@@ -583,28 +593,32 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                         h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Draw("L SAME");
 
 
-                        TLegend* leg = new TLegend(0.7,0.75,0.9,0.9);
+                        TLegend* leg = new TLegend(0.55,0.55,0.9,0.9);
                         leg->SetTextSize(0.03);
                         leg->SetFillStyle(0);     // Transparent
 
                         // Gauss:
                         leg->AddEntry(h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL], "Gauss", "l");
 
-                        leg->AddEntry((TObject*)0, Form(" N=%.3f", par_No_Coul[iCh][iCent][iKt][0]),"");
-                        leg->AddEntry((TObject*)0, Form(" #lambda=%.3f", par_No_Coul[iCh][iCent][iKt][1]),"");
-                        leg->AddEntry((TObject*)0, Form(" R_{o}=%.1f", par_No_Coul[iCh][iCent][iKt][2]),"");
-                        leg->AddEntry((TObject*)0, Form(" R_{s}=%.1f", par_No_Coul[iCh][iCent][iKt][3]),"");
-                        leg->AddEntry((TObject*)0, Form(" R_{l}=%.1f", par_No_Coul[iCh][iCent][iKt][4]),"");
+                        leg->AddEntry((TObject*)0, Form(" Chi2/NDF = %.3f", par_No_Coul_Chi_div_NDF[iCh][iCent][iKt]),"");
+
+                        leg->AddEntry((TObject*)0, Form(" N=%.4f #pm %.4f", par_No_Coul[iCh][iCent][iKt][0],par_No_Coul_Err[iCh][iCent][iKt][0]),"");
+                        leg->AddEntry((TObject*)0, Form(" #lambda=%.4f #pm %.4f", par_No_Coul[iCh][iCent][iKt][1],par_No_Coul_Err[iCh][iCent][iKt][1]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{o}=%.3f #pm %.3f", par_No_Coul[iCh][iCent][iKt][2],par_No_Coul_Err[iCh][iCent][iKt][2]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{s}=%.3f #pm %.3f", par_No_Coul[iCh][iCent][iKt][3],par_No_Coul_Err[iCh][iCent][iKt][3]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{l}=%.3f #pm %.3f", par_No_Coul[iCh][iCent][iKt][4],par_No_Coul_Err[iCh][iCent][iKt][4]),"");
 
                             
                         // Bowler-Sinyukov:
                         leg->AddEntry(h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL], "Bowler-Sinyukov", "l");
                             
-                        leg->AddEntry((TObject*)0, Form(" N=%.3f", par_Coul[iCh][iCent][iKt][0]),"");
-                        leg->AddEntry((TObject*)0, Form(" #lambda=%.3f", par_Coul[iCh][iCent][iKt][1]),"");
-                        leg->AddEntry((TObject*)0, Form(" R_{o}=%.1f #pm %.1f", par_Coul[iCh][iCent][iKt][2]),"");
-                        leg->AddEntry((TObject*)0, Form(" R_{s}=%.1f #pm %.1f", par_Coul[iCh][iCent][iKt][3]),"");
-                        leg->AddEntry((TObject*)0, Form(" R_{l}=%.1f #pm %.1f", par_Coul[iCh][iCent][iKt][4]),"");
+                        leg->AddEntry((TObject*)0, Form(" Chi2/NDF = %.3f", par_Coul_Chi_div_NDF[iCh][iCent][iKt]),"");
+
+                        leg->AddEntry((TObject*)0, Form(" N=%.4f #pm %.4f", par_Coul[iCh][iCent][iKt][0],par_Coul_Err[iCh][iCent][iKt][0]),"");
+                        leg->AddEntry((TObject*)0, Form(" #lambda=%.3f #pm %.3f", par_Coul[iCh][iCent][iKt][1],par_Coul_Err[iCh][iCent][iKt][1]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{o}=%.3f #pm %.3f", par_Coul[iCh][iCent][iKt][2],par_Coul_Err[iCh][iCent][iKt][2]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{s}=%.3f #pm %.3f", par_Coul[iCh][iCent][iKt][3],par_Coul_Err[iCh][iCent][iKt][3]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{l}=%.3f #pm %.3f", par_Coul[iCh][iCent][iKt][4],par_Coul_Err[iCh][iCent][iKt][4]),"");
 
                         leg->Draw();
                         
