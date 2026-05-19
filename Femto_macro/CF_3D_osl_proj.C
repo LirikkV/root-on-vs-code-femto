@@ -85,6 +85,7 @@ if (!f || f->IsZombie()) {std::cout << "Ohhhhh" << std::endl; exit(0); }
 TString hist_3D_Name = "h_3D";
 
 TH3F* h_Arr_3D[N_hist_types_3D][N_Charge][N_Bins_Centr][N_Bins_Kt];
+Double_t Entries_in_A_arr[N_Charge][N_Bins_Centr][N_Bins_Kt];
 
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 {
@@ -93,10 +94,11 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
         for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
         {
             for (Int_t ihType=0; ihType < N_hist_types_3D; ihType++)
-                {
+            {
             //3D:
             h_Arr_3D[ihType][iCh][iCent][iKt] = (TH3F* )f->Get(Form("%s_%i_%i_%i_%i",hist_3D_Name.Data(),ihType,iCh,iCent,iKt));
-        }
+            }
+            Entries_in_A_arr[iCh][iCent][iKt] = h_Arr_3D[0][iCh][iCent][iKt]->GetEntries();
         }
     }
 }
@@ -597,6 +599,8 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                         leg->SetTextSize(0.03);
                         leg->SetFillStyle(0);     // Transparent
 
+                        //Entries in A:
+                        leg->AddEntry((TObject*)0, Form(" Entries in A: %.3f Millons", Entries_in_A_arr[iCh][iCent][iKt]/1000000.),"");
                         // Gauss:
                         leg->AddEntry(h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL], "Gauss", "l");
 
