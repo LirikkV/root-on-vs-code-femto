@@ -15,6 +15,7 @@
 #include "TStyle.h"
 #include "TFitResult.h"
 #include "TFitResultPtr.h"
+#include "TPaveText.h"
 
 #include <iostream>
 using namespace::std;
@@ -52,7 +53,7 @@ TH1D *hQCoul = (TH1D *)f_K->Get("hQCoul");
 Double_t fitf_No_Coulomb(Double_t *x, Double_t *par)
 {
     Double_t fitval = par[0]  * ((1.) + par[1] * 
-    TMath::Exp(-(par[2] * x[0] * x[0] + par[3]*x[1]*x[1] + par[4] * x[2]*x[2]
+    TMath::Exp(-(par[2]*par[2] * x[0] * x[0] + par[3]*par[3]*x[1]*x[1] + par[4]*par[4] * x[2]*x[2]
     ) / (0.197327 * 0.197327)));
 
     return fitval;
@@ -70,7 +71,7 @@ Double_t fitf_Coulomb(Double_t *x, Double_t *par)
     Double_t q_inv_from_B_w = h_Map_3D[cur_iCh][cur_iCent][cur_iKt]->GetBinContent(h_Map_3D[cur_iCh][cur_iCent][cur_iKt]->FindBin(x[0],x[1],x[2]));
     Double_t K = hQCoul->GetBinContent(hQCoul->FindBin(q_inv_from_B_w));
     Double_t fitval = par[0]  * ((1. - par[1]) + par[1] * K *(1.+
-    TMath::Exp(-(par[2] * x[0] * x[0] + par[3]*x[1]*x[1] + par[4] * x[2]*x[2]
+    TMath::Exp(-(par[2]*par[2] * x[0] * x[0] + par[3]*par[3]*x[1]*x[1] + par[4]*par[4] * x[2]*x[2]
     ) / (0.197327 * 0.197327))));
 
     return fitval;
@@ -254,6 +255,13 @@ for (Int_t i = 1; i <= N_bins_K_coul; i++)
 //Fit params:
 Double_t par_No_Coul[N_Charge][N_Bins_Centr][N_Bins_Kt][N_of_Pars_for_fit];
 Double_t par_Coul[N_Charge][N_Bins_Centr][N_Bins_Kt][N_of_Pars_for_fit];
+
+Double_t par_No_Coul_Err[N_Charge][N_Bins_Centr][N_Bins_Kt][N_of_Pars_for_fit];
+Double_t par_Coul_Err[N_Charge][N_Bins_Centr][N_Bins_Kt][N_of_Pars_for_fit];
+
+Double_t par_No_Coul_Chi_div_NDF[N_Charge][N_Bins_Centr][N_Bins_Kt];
+Double_t par_Coul_Chi_div_NDF[N_Charge][N_Bins_Centr][N_Bins_Kt];
+
 TF3* f_No_Coul_Arr[N_Charge][N_Bins_Centr][N_Bins_Kt];
 TF3* f_Coul_Arr[N_Charge][N_Bins_Centr][N_Bins_Kt];
 
@@ -304,6 +312,12 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             h_Arr_3D[0][iCh][iCent][iKt]->Fit(fitf_name);
 
             f_No_Coul_Arr[iCh][iCent][iKt]->GetParameters(par_No_Coul[iCh][iCent][iKt]);
+
+            // const Double_t* errs = f_No_Coul_Arr[iCh][iCent][iKt]->GetParErrors();
+            // // Copying errors:
+            // for (Int_t p = 0; p < N_of_Pars_for_fit; ++p) {
+            //     par_No_Coul_Err[iCh][iCent][iKt][p] = errs[p];
+            // }
 }}}
 
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
@@ -559,61 +573,120 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 
                         c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->cd();
                         h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->SetTitle(c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->GetTitle());
-                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Draw();
-
-                        h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL]->SetLineColor(kRed);
-                        h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Draw("L SAME");
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->SetStats(0);
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Draw("E");
 
                         h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL]->SetLineColor(kGreen);
                         h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Draw("L SAME");
 
-                        //c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->SaveAs(Output_Folder + "c_3D_8_1_X.pdf");
+                        h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL]->SetLineColor(kRed);
+                        h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Draw("L SAME");
+
+
+                        TLegend* leg = new TLegend(0.7,0.75,0.9,0.9);
+                        leg->SetTextSize(0.03);
+                        leg->SetFillStyle(0);     // Transparent
+
+                        // Gauss:
+                        leg->AddEntry(h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL], "Gauss", "l");
+
+                        leg->AddEntry((TObject*)0, Form(" N=%.3f", par_No_Coul[iCh][iCent][iKt][0]),"");
+                        leg->AddEntry((TObject*)0, Form(" #lambda=%.3f", par_No_Coul[iCh][iCent][iKt][1]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{o}=%.1f", par_No_Coul[iCh][iCent][iKt][2]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{s}=%.1f", par_No_Coul[iCh][iCent][iKt][3]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{l}=%.1f", par_No_Coul[iCh][iCent][iKt][4]),"");
+
+                            
+                        // Bowler-Sinyukov:
+                        leg->AddEntry(h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL], "Bowler-Sinyukov", "l");
+                            
+                        leg->AddEntry((TObject*)0, Form(" N=%.3f", par_Coul[iCh][iCent][iKt][0]),"");
+                        leg->AddEntry((TObject*)0, Form(" #lambda=%.3f", par_Coul[iCh][iCent][iKt][1]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{o}=%.1f #pm %.1f", par_Coul[iCh][iCent][iKt][2]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{s}=%.1f #pm %.1f", par_Coul[iCh][iCent][iKt][3]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{l}=%.1f #pm %.1f", par_Coul[iCh][iCent][iKt][4]),"");
+
+                        leg->Draw();
+                        
                         c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->Write();
                     }
         }
     }
 }
 
-c_3D_Proj_Arr[0][8][1][0]->cd();
-h_Arr_3D_Projects_OSL[0][0][8][1][0]->SetTitle(c_3D_Proj_Arr[0][8][1][0]->GetTitle());
-h_Arr_3D_Projects_OSL[0][0][8][1][0]->Draw();
+// c_3D_Proj_Arr[0][8][1][0]->cd();
+// h_Arr_3D_Projects_OSL[0][0][8][1][0]->SetTitle(c_3D_Proj_Arr[0][8][1][0]->GetTitle());
+// h_Arr_3D_Projects_OSL[0][0][8][1][0]->SetStats(0);
+// h_Arr_3D_Projects_OSL[0][0][8][1][0]->Draw();
 
-h_Fit_Coul_Proj[0][0][8][1][0]->SetLineColor(kRed);
-h_Fit_Coul_Proj[0][0][8][1][0]->Draw("L SAME");
+// h_Fit_Coul_Proj[0][0][8][1][0]->SetLineColor(kRed);
+// h_Fit_Coul_Proj[0][0][8][1][0]->Draw("L SAME");
 
-h_Fit_No_Coul_Proj[0][0][8][1][0]->SetLineColor(kGreen);
-h_Fit_No_Coul_Proj[0][0][8][1][0]->Draw("L SAME");
+// h_Fit_No_Coul_Proj[0][0][8][1][0]->SetLineColor(kGreen);
+// h_Fit_No_Coul_Proj[0][0][8][1][0]->Draw("L SAME");
 
-c_3D_Proj_Arr[0][8][1][0]->SaveAs(Output_Folder + "c_3D_8_1_X.pdf");
-//c_3D_Proj_Arr[0][8][1][0]->Write();
+// c_3D_Proj_Arr[0][8][1][0]->SaveAs(Output_Folder + "c_3D_8_1_X.pdf");
+// //c_3D_Proj_Arr[0][8][1][0]->Write();
 
 
-c_3D_Proj_Arr[0][8][1][1]->cd();
-h_Arr_3D_Projects_OSL[0][0][8][1][1]->SetTitle(c_3D_Proj_Arr[0][8][1][1]->GetTitle());
-h_Arr_3D_Projects_OSL[0][0][8][1][1]->Draw();
+// c_3D_Proj_Arr[0][8][1][1]->cd();
+// h_Arr_3D_Projects_OSL[0][0][8][1][1]->SetTitle(c_3D_Proj_Arr[0][8][1][1]->GetTitle());
+// h_Arr_3D_Projects_OSL[0][0][8][1][1]->SetStats(0);
+// h_Arr_3D_Projects_OSL[0][0][8][1][1]->Draw();
 
-h_Fit_Coul_Proj[0][0][8][1][1]->SetLineColor(kRed);
-h_Fit_Coul_Proj[0][0][8][1][1]->Draw("L SAME");
+// h_Fit_Coul_Proj[0][0][8][1][1]->SetLineColor(kRed);
+// h_Fit_Coul_Proj[0][0][8][1][1]->Draw("L SAME");
 
-h_Fit_No_Coul_Proj[0][0][8][1][1]->SetLineColor(kGreen);
-h_Fit_No_Coul_Proj[0][0][8][1][1]->Draw("L SAME");
+// h_Fit_No_Coul_Proj[0][0][8][1][1]->SetLineColor(kGreen);
+// h_Fit_No_Coul_Proj[0][0][8][1][1]->Draw("L SAME");
 
-c_3D_Proj_Arr[0][8][1][1]->SaveAs(Output_Folder + "c_3D_8_1_Y.pdf");
+// TLegend* leg = new TLegend(0.7,0.75,0.9,0.9);
+// leg->SetTextSize(0.03);
+// leg->SetFillStyle(0);     // Transparent
+// // Gauss:
+// leg->AddEntry(h_Fit_No_Coul_Proj[0][0][8][1][1], "Gauss", "l");
+// leg->AddEntry((TObject*)0,
+//     Form("  N=%.3f,  #lambda=%.3f,  R_{o}=%.1f,  R_{s}=%.1f,  R_{l}=%.1f",
+//          par_No_Coul[0][8][1][0],
+//          par_No_Coul[0][8][1][1],
+//          TMath::Sqrt(par_No_Coul[0][8][1][2]),
+//          TMath::Sqrt(par_No_Coul[0][8][1][3]),
+//          TMath::Sqrt(par_No_Coul[0][8][1][4])),
+//     "");
+    
+// // Bowler-Sinyukov:
+// leg->AddEntry(h_Fit_Coul_Proj[0][0][8][1][1], "Bowler-Sinyukov", "l");
+// leg->AddEntry((TObject*)0,
+//     Form("  N=%.3f,  #lambda=%.3f,  R_{o}=%.1f,  R_{s}=%.1f,  R_{l}=%.1f",
+//          par_Coul[0][8][1][0],
+//          par_Coul[0][8][1][1],
+//          TMath::Sqrt(par_Coul[0][8][1][2]),
+//          TMath::Sqrt(par_Coul[0][8][1][3]),
+//          TMath::Sqrt(par_Coul[0][8][1][4])),
+//     "");
+    
+// leg->Draw();
+
+// c_3D_Proj_Arr[0][8][1][1]->SaveAs(Output_Folder + "c_3D_8_1_Y.pdf");
+
+
+
 //c_3D_Proj_Arr[0][8][1][1]->Write();
 
 
-c_3D_Proj_Arr[0][8][1][2]->cd();
-h_Arr_3D_Projects_OSL[0][0][8][1][2]->SetTitle(c_3D_Proj_Arr[0][8][1][2]->GetTitle());
-h_Arr_3D_Projects_OSL[0][0][8][1][2]->Draw();
+// c_3D_Proj_Arr[0][8][1][2]->cd();
+// h_Arr_3D_Projects_OSL[0][0][8][1][2]->SetTitle(c_3D_Proj_Arr[0][8][1][2]->GetTitle());
+// h_Arr_3D_Projects_OSL[0][0][8][1][0]->SetStats(1);
+// h_Arr_3D_Projects_OSL[0][0][8][1][2]->Draw();
 
-h_Fit_Coul_Proj[0][0][8][1][2]->SetLineColor(kRed);
-h_Fit_Coul_Proj[0][0][8][1][2]->Draw("SAME L");
+// h_Fit_Coul_Proj[0][0][8][1][2]->SetLineColor(kRed);
+// h_Fit_Coul_Proj[0][0][8][1][2]->Draw("SAME L");
 
-h_Fit_No_Coul_Proj[0][0][8][1][2]->SetLineColor(kGreen);
-h_Fit_No_Coul_Proj[0][0][8][1][2]->Draw("L SAME");
+// h_Fit_No_Coul_Proj[0][0][8][1][2]->SetLineColor(kGreen);
+// h_Fit_No_Coul_Proj[0][0][8][1][2]->Draw("L SAME");
 
-c_3D_Proj_Arr[0][8][1][2]->SaveAs(Output_Folder + "c_3D_8_1_Z.pdf");
-//c_3D_Proj_Arr[0][8][1][2]->Write();
+// c_3D_Proj_Arr[0][8][1][2]->SaveAs(Output_Folder + "c_3D_8_1_Z.pdf");
+// //c_3D_Proj_Arr[0][8][1][2]->Write();
 
 
 
