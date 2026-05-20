@@ -16,9 +16,10 @@
 #include "TFitResult.h"
 #include "TFitResultPtr.h"
 #include "TPaveText.h"
+#include "TTree.h"
 
 #include <iostream>
-using namespace::std;
+using namespace std;
 
 const Int_t N_hist_types_3D = 3; // A or B or B_weighted
 //const Int_t N_hist_types_1D = 2; //A or B
@@ -32,11 +33,20 @@ const TString Charged_particles_pairs_titles[N_Charge] = {"Pi+Pi+","Pi-Pi-"};
 const TString Centrality_region_titles[N_Bins_Centr] = {"70-80%","60-70%","50-60%","40-50%","30-40%","20-30%","10-20%","5-10%","0-5%"};
 const TString Kt_bins_titles[N_Bins_Kt] = {"[0.15, 0.25]","[0.25, 0.35]","[0.35, 0.45]","[0.45, 0.60]"};
 
-//const Double_t KtBins_Borders[N_Bins_Kt+1] = {0.15, 0.25, 0.35, 0.45, 0.60};
+struct FitResult {
+    Int_t    charge;
+    Int_t    centrality;
+    Int_t    Kt;
+    Int_t    fitType;     // 0 = NoCoul, 1 = Coul
+    Double_t par[N_of_Pars_for_fit];
+    Double_t parErr[N_of_Pars_for_fit];
+    Double_t chi2ndf;
+};
 
 const TString Input_File = "/home/kirill/root-on-vs-code/Femto_input/out_Au_Au200_07_05_FMRW_article.root";
-const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/15_05_FMRW_article/out_Au_Au200_15_05_FMR_pr_3D_proj.root";
-const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/15_05_FMRW_article/";
+const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/out_Au_Au200_20_05_FMR_pr_3D_proj.root";
+const TString Output_params_File = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/out_Au_Au200_20_05_FMR_pr_3D_proj_params.root";
+const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/";
 const TString Input_K_file = "/home/kirill/root-on-vs-code/Femto_macro/Kqinv_R_5fm.root";
 const TString OSL_xyz[3] {"x","y","z"};
 const TString OSL_names[3] {"out","side","long"};
@@ -135,10 +145,6 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             q_i_min_max_bins[3][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(q_i_max);
             q_i_min_max_bins[3][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(q_i_max);
 
-            // for(int i=0;i<4;i++)
-            // {
-            // std::cout<<q_i_min_max_bins[i][iCh][iCent][iKt][0]<<std::endl;
-            // }
         }
     }
 }
@@ -403,10 +409,6 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                         //CF_projections:
                         h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Write();
                     }
-                    //CF:
-                    h_Arr_3D[0][iCh][iCent][iKt]->Write();
-                    //B_weighted:
-                    h_Arr_3D[2][iCh][iCent][iKt]->Write();
         }
     }
 }
@@ -642,108 +644,57 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
     }
 }
 
-// c_3D_Proj_Arr[0][8][1][0]->cd();
-// h_Arr_3D_Projects_OSL[0][0][8][1][0]->SetTitle(c_3D_Proj_Arr[0][8][1][0]->GetTitle());
-// h_Arr_3D_Projects_OSL[0][0][8][1][0]->SetStats(0);
-// h_Arr_3D_Projects_OSL[0][0][8][1][0]->Draw();
-
-// h_Fit_Coul_Proj[0][0][8][1][0]->SetLineColor(kRed);
-// h_Fit_Coul_Proj[0][0][8][1][0]->Draw("L SAME");
-
-// h_Fit_No_Coul_Proj[0][0][8][1][0]->SetLineColor(kGreen);
-// h_Fit_No_Coul_Proj[0][0][8][1][0]->Draw("L SAME");
-
-// c_3D_Proj_Arr[0][8][1][0]->SaveAs(Output_Folder + "c_3D_8_1_X.pdf");
-// //c_3D_Proj_Arr[0][8][1][0]->Write();
+//Let's Fill fit parameters:
+TFile *f_params = new TFile(Output_params_File,"RECREATE");
+TTree *tree_params = new TTree("fit_params_Tree", "Tree of fit parameters");
 
 
-// c_3D_Proj_Arr[0][8][1][1]->cd();
-// h_Arr_3D_Projects_OSL[0][0][8][1][1]->SetTitle(c_3D_Proj_Arr[0][8][1][1]->GetTitle());
-// h_Arr_3D_Projects_OSL[0][0][8][1][1]->SetStats(0);
-// h_Arr_3D_Projects_OSL[0][0][8][1][1]->Draw();
+FitResult res;
+tree_params->Branch("charge",    &res.charge,    "charge/I");
+tree_params->Branch("centrality",&res.centrality,"centrality/I");
+tree_params->Branch("Kt",        &res.Kt,        "Kt/I");
+tree_params->Branch("fitType",   &res.fitType,   "fitType/I");
+tree_params->Branch("par",    res.par,    Form("par[%d]/D", N_of_Pars_for_fit));
+tree_params->Branch("parErr", res.parErr, Form("parErr[%d]/D", N_of_Pars_for_fit));
+tree_params->Branch("chi2ndf",   &res.chi2ndf,   "chi2ndf/D");
 
-// h_Fit_Coul_Proj[0][0][8][1][1]->SetLineColor(kRed);
-// h_Fit_Coul_Proj[0][0][8][1][1]->Draw("L SAME");
-
-// h_Fit_No_Coul_Proj[0][0][8][1][1]->SetLineColor(kGreen);
-// h_Fit_No_Coul_Proj[0][0][8][1][1]->Draw("L SAME");
-
-// TLegend* leg = new TLegend(0.7,0.75,0.9,0.9);
-// leg->SetTextSize(0.03);
-// leg->SetFillStyle(0);     // Transparent
-// // Gauss:
-// leg->AddEntry(h_Fit_No_Coul_Proj[0][0][8][1][1], "Gauss", "l");
-// leg->AddEntry((TObject*)0,
-//     Form("  N=%.3f,  #lambda=%.3f,  R_{o}=%.1f,  R_{s}=%.1f,  R_{l}=%.1f",
-//          par_No_Coul[0][8][1][0],
-//          par_No_Coul[0][8][1][1],
-//          TMath::Sqrt(par_No_Coul[0][8][1][2]),
-//          TMath::Sqrt(par_No_Coul[0][8][1][3]),
-//          TMath::Sqrt(par_No_Coul[0][8][1][4])),
-//     "");
-    
-// // Bowler-Sinyukov:
-// leg->AddEntry(h_Fit_Coul_Proj[0][0][8][1][1], "Bowler-Sinyukov", "l");
-// leg->AddEntry((TObject*)0,
-//     Form("  N=%.3f,  #lambda=%.3f,  R_{o}=%.1f,  R_{s}=%.1f,  R_{l}=%.1f",
-//          par_Coul[0][8][1][0],
-//          par_Coul[0][8][1][1],
-//          TMath::Sqrt(par_Coul[0][8][1][2]),
-//          TMath::Sqrt(par_Coul[0][8][1][3]),
-//          TMath::Sqrt(par_Coul[0][8][1][4])),
-//     "");
-    
-// leg->Draw();
-
-// c_3D_Proj_Arr[0][8][1][1]->SaveAs(Output_Folder + "c_3D_8_1_Y.pdf");
-
-
-
-//c_3D_Proj_Arr[0][8][1][1]->Write();
-
-
-// c_3D_Proj_Arr[0][8][1][2]->cd();
-// h_Arr_3D_Projects_OSL[0][0][8][1][2]->SetTitle(c_3D_Proj_Arr[0][8][1][2]->GetTitle());
-// h_Arr_3D_Projects_OSL[0][0][8][1][0]->SetStats(1);
-// h_Arr_3D_Projects_OSL[0][0][8][1][2]->Draw();
-
-// h_Fit_Coul_Proj[0][0][8][1][2]->SetLineColor(kRed);
-// h_Fit_Coul_Proj[0][0][8][1][2]->Draw("SAME L");
-
-// h_Fit_No_Coul_Proj[0][0][8][1][2]->SetLineColor(kGreen);
-// h_Fit_No_Coul_Proj[0][0][8][1][2]->Draw("L SAME");
-
-// c_3D_Proj_Arr[0][8][1][2]->SaveAs(Output_Folder + "c_3D_8_1_Z.pdf");
-// //c_3D_Proj_Arr[0][8][1][2]->Write();
-
-
-
-TCanvas *c_3D= new TCanvas("c_3D_Plus", "Canvas",1920,1080);
-c_3D->Divide(3);
-
-for (Int_t iOSL = 0; iOSL < 3; iOSL++)
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 {
-    
-    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetXaxis()->SetRangeUser(-0.1, 0.1);
-    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetYaxis()->SetRangeUser(0.8, 1.8);
-    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->SetTitle(Form("CF_3D_Projections_Non_norm Charge +, Centrality 0-5%%,  K_t [0.45,0.60] %s", OSL_names[iOSL].Data()));
-    c_3D->cd(iOSL+1);
-    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->Draw();
-    
-}
-c_3D->SaveAs(Output_Folder + "c_3D_1.pdf");
-for (Int_t iOSL = 0; iOSL < 3; iOSL++)
-{
-    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetXaxis()->SetRangeUser(-0.4, 0.4);
-    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->GetYaxis()->SetRangeUser(0.8, 1.8);
-    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->SetTitle(Form("CF_3D_Projections_Non_norm Charge +, Centrality 0-5%%, K_t [0.45,0.60] %s", OSL_names[iOSL].Data()));
-    c_3D->cd(iOSL+1);
-    h_Arr_3D_Projects_OSL[0][0][N_Bins_Centr-1][3][iOSL]->Draw();
-    
-}
-c_3D->SaveAs(Output_Folder + "c_3D_2.pdf");
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
 
-c_3D->Write();
+            res.charge      = iCh; 
+            res.centrality  = iCent; 
+            res.Kt          = iKt;
+            res.fitType = 0; //No coulomb
+            for (int p=0; p<N_of_Pars_for_fit; p++) {
+                res.par[p]    = par_No_Coul[iCh][iCent][iKt][p];
+                res.parErr[p] = par_No_Coul_Err[iCh][iCent][iKt][p];
+            }
+            res.chi2ndf = par_No_Coul_Chi_div_NDF[iCh][iCent][iKt];
+            tree_params->Fill();
+
+            res.charge      = iCh; 
+            res.centrality  = iCent; 
+            res.Kt          = iKt;
+            res.fitType = 1;
+            for (int p=0; p<N_of_Pars_for_fit; p++) {
+                res.par[p]    = par_Coul[iCh][iCent][iKt][p];
+                res.parErr[p] = par_Coul_Err[iCh][iCent][iKt][p];
+            }
+            res.chi2ndf = par_Coul_Chi_div_NDF[iCh][iCent][iKt];
+            tree_params->Fill();
+        }
+    }
+}
+
+tree_params->Write();
+f_params->Close();
+
+
+
 f_out->Close();
 
 
