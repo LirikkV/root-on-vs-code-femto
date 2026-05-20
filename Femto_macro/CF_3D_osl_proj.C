@@ -194,7 +194,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 }
 
 // 2) Getting projections:
-const Double_t range = 0.05;//Gev/c              
+const Double_t range = 0.01;//Gev/c              
 TH1F* h_Arr_3D_Projects_OSL[N_hist_types_3D][N_Charge][N_Bins_Centr][N_Bins_Kt][3];
 
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
@@ -208,21 +208,21 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                     h_Arr_3D[ihType][iCh][iCent][iKt]->GetYaxis()->SetRangeUser(-range,range);
                     h_Arr_3D[ihType][iCh][iCent][iKt]->GetZaxis()->SetRangeUser(-range,range);
                     h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][0] = (TH1F*)h_Arr_3D[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[0]);
-                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][0]->SetName(Form("CF_3D_non_norm_%i_%i_%i_%i_%s",ihType,iCh,iCent,iKt,OSL_names[0].Data()));
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][0]->SetName(Form("CF_3D_proj_%i_%i_%i_%i_%s",ihType,iCh,iCent,iKt,OSL_names[0].Data()));
                     h_Arr_3D[ihType][iCh][iCent][iKt]->GetYaxis()->SetRange();
                     h_Arr_3D[ihType][iCh][iCent][iKt]->GetZaxis()->SetRange();
 
                     h_Arr_3D[ihType][iCh][iCent][iKt]->GetXaxis()->SetRangeUser(-range,range);
                     h_Arr_3D[ihType][iCh][iCent][iKt]->GetZaxis()->SetRangeUser(-range,range);
                     h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][1] = (TH1F*)h_Arr_3D[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[1]);
-                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][1]->SetName(Form("CF_3D_non_norm_%i_%i_%i_%i_%s",ihType,iCh,iCent,iKt,OSL_names[1].Data()));
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][1]->SetName(Form("CF_3D_proj_%i_%i_%i_%i_%s",ihType,iCh,iCent,iKt,OSL_names[1].Data()));
                     h_Arr_3D[ihType][iCh][iCent][iKt]->GetXaxis()->SetRange();
                     h_Arr_3D[ihType][iCh][iCent][iKt]->GetZaxis()->SetRange();
 
                     h_Arr_3D[ihType][iCh][iCent][iKt]->GetXaxis()->SetRangeUser(-range,range);
                     h_Arr_3D[ihType][iCh][iCent][iKt]->GetYaxis()->SetRangeUser(-range,range);
                     h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][2] = (TH1F*)h_Arr_3D[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[2]);
-                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][2]->SetName(Form("CF_3D_non_norm_%i_%i_%i_%i_%s",ihType,iCh,iCent,iKt,OSL_names[2].Data()));
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][2]->SetName(Form("CF_3D_proj_%i_%i_%i_%i_%s",ihType,iCh,iCent,iKt,OSL_names[2].Data()));
                     h_Arr_3D[ihType][iCh][iCent][iKt]->GetXaxis()->SetRange();
                     h_Arr_3D[ihType][iCh][iCent][iKt]->GetYaxis()->SetRange();
                 }
@@ -599,10 +599,10 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                         h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Draw("E");
 
                         h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL]->SetLineColor(kGreen);
-                        h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Draw("L SAME");
+                        h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Draw("P L SAME HIST");
 
                         h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL]->SetLineColor(kRed);
-                        h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Draw("L SAME");
+                        h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Draw("P L SAME HIST");
 
 
                         TLegend* leg = new TLegend(0.55,0.55,0.9,0.9);
