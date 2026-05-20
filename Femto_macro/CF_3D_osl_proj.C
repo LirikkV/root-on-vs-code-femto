@@ -294,7 +294,6 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                                                                             x1_fit_range, x2_fit_range, 
                                                                             x1_fit_range, x2_fit_range, N_of_Pars_for_fit);
 
-            // f_No_Coul->FixParameter(0,N_start);
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(0, N_start);
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParameter(1, Lambda_start);
 
@@ -307,7 +306,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 
 
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(0, 0., 2.);
-            f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(1, 0., 1.);
+            f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(1, 0., 2.);
 
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(2, 0.01, 15.);
             f_No_Coul_Arr[iCh][iCent][iKt]->SetParLimits(3, 0.01, 15.);
@@ -346,7 +345,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                                                                             x1_fit_range, x2_fit_range, 
                                                                             x1_fit_range, x2_fit_range, N_of_Pars_for_fit);
 
-            // f_No_Coul->FixParameter(0,N_start);
+
             f_Coul_Arr[iCh][iCent][iKt]->SetParameter(0, N_start);
             f_Coul_Arr[iCh][iCent][iKt]->SetParameter(1, Lambda_start);
 
@@ -359,8 +358,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 
 
             f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(0, 0., 2.);
-
-            f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(1, 0., 1.);
+            f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(1, 0., 2.);
 
             f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(2, 0.01, 15.);
             f_Coul_Arr[iCh][iCent][iKt]->SetParLimits(3, 0.01, 15.);
