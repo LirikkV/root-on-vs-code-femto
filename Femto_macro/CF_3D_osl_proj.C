@@ -598,6 +598,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                         c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->cd();
                         h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->SetTitle(c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->GetTitle());
                         h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->SetStats(0);
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->GetYaxis()->SetRangeUser(0.7,1.5);
                         h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Draw("E");
 
                         h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL]->SetLineColor(kGreen);
@@ -608,13 +609,13 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 
 
                         TLegend* leg = new TLegend(0.55,0.55,0.9,0.9);
-                        leg->SetTextSize(0.03);
+                        leg->SetTextSize(0.04);
                         leg->SetFillStyle(0);     // Transparent
 
                         //Entries in A:
                         leg->AddEntry((TObject*)0, Form(" Entries in A: %.3f Millions", Entries_in_A_arr[iCh][iCent][iKt]/1000000.),"");
                         // Gauss:
-                        leg->AddEntry(h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL], "Gauss", "l");
+                        leg->AddEntry(h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL], "Gauss", "F");
 
                         leg->AddEntry((TObject*)0, Form(" Chi2/NDF = %.3f", par_No_Coul_Chi_div_NDF[iCh][iCent][iKt]),"");
 
@@ -626,7 +627,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 
                             
                         // Bowler-Sinyukov:
-                        leg->AddEntry(h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL], "Bowler-Sinyukov", "l");
+                        leg->AddEntry(h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL], "Bowler-Sinyukov", "F");
                             
                         leg->AddEntry((TObject*)0, Form(" Chi2/NDF = %.3f", par_Coul_Chi_div_NDF[iCh][iCent][iKt]),"");
 
