@@ -13,7 +13,7 @@
 #include <vector>
 
 // ---------------- User settings ----------------
-const TString Input_File  = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/out_Au_Au200_20_05_FMR_pr_3D_proj_params.root";
+const TString Input_File  = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/out_Au_Au200_20_05_FMR_pr_3D_proj_params_21_05.root";
 const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/out_Au_Au200_20_05_FMR_pr_3D_proj_R_vs_Kt.root";
 const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/";
 
@@ -45,14 +45,16 @@ const TString charge_titles[2] = {"#pi^{+}#pi^{+}", "#pi^{-}#pi^{-}"};
 
 // Distinguishable colours for 9 centralities
 const Int_t cent_colors[9] = {
-    kRed, kBlue, kGreen+2, kMagenta, kOrange+7,
-    kCyan+2, kYellow+2, kBrown, kBlack
+    kRed, kBlue, kBlack, kMagenta, kGreen,
+    kGray+2, kBlue, kRed, kBlack
 };
 const Int_t cent_markers[9] = {
-    20, 21, 22, 23, 33,
-    29, 34, 31, 28
+    30, 31, 27, 29, 25,
+    22, 24, 28, 20
 };
-
+// Celected centralities:
+const Int_t selected_cents[] = {8,7,6,5,4};  // 0 <-> 70-80% ... 7 <-> 5-10%, 8 <-> 0-5%
+const Int_t N_selected_cents = sizeof(selected_cents)/sizeof(selected_cents[0]);
 
 // --------------- Data storage -------------------
 Double_t R_val [N_Charge][N_Centr][N_Kt][3];  // [charge][cent][kt][rad]
@@ -139,7 +141,7 @@ void CF_3D_osl_proj_R_paint() {
                 gr_cent[icent]->SetMarkerStyle(cent_markers[icent]);
                 gr_cent[icent]->SetMarkerColor(cent_colors[icent]);
                 gr_cent[icent]->SetLineColor(cent_colors[icent]);
-                gr_cent[icent]->SetMarkerSize(1.2);
+                gr_cent[icent]->SetMarkerSize(1.9);
                 has_any_data = true;
             }
 
@@ -161,7 +163,8 @@ void CF_3D_osl_proj_R_paint() {
 
             // Draw the first non-null graph to set axes
             TGraphErrors *firstGr = nullptr;
-            for (Int_t icent=0; icent<N_Centr; icent++) {
+            for (Int_t idx_2=0; idx_2<N_selected_cents; idx_2++) {
+            Int_t icent = selected_cents[idx_2];
                 if (gr_cent[icent]) { firstGr = gr_cent[icent]; break; }
             }
             if (firstGr) {
@@ -169,21 +172,24 @@ void CF_3D_osl_proj_R_paint() {
                                        canvName.Data(), rad_names[ir].Data()));
                 firstGr->Draw("AP");
                 // Set reasonable Y range (maybe auto, but can be adjusted)
-                firstGr->GetYaxis()->SetRangeUser(3.0, 8.0);
+                firstGr->GetYaxis()->SetRangeUser(2.0, 7.0);
             }
 
             // Draw the rest
-            for (Int_t icent=0; icent<N_Centr; icent++) {
+            for (Int_t idx_2=0; idx_2<N_selected_cents; idx_2++) {
+            Int_t icent = selected_cents[idx_2];
                 if (gr_cent[icent] && gr_cent[icent] != firstGr)
                     gr_cent[icent]->Draw("P SAME");
             }
 
             // Legend
-            TLegend *leg = new TLegend(0.75, 0.45, 0.89, 0.89);
-            leg->SetFillStyle(0);
-            leg->SetBorderSize(0);
-            leg->SetTextSize(0.03);
-            for (Int_t icent=0; icent<N_Centr; icent++) {
+            TLegend *leg = new TLegend(0.63, 0.45, 0.77, 0.89);
+            leg->SetFillStyle(1001);
+            leg->SetFillColor(kWhite);
+            leg->SetBorderSize(1);
+            leg->SetTextSize(0.05);
+            for (Int_t idx_2=0; idx_2<N_selected_cents; idx_2++) {
+            Int_t icent = selected_cents[idx_2];
                 if (gr_cent[icent])
                     leg->AddEntry(gr_cent[icent], cent_titles[icent], "p");
             }
