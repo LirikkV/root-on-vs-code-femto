@@ -153,7 +153,33 @@ Double_t A_integrals_arr[N_Charge][N_Bins_Centr][N_Bins_Kt] = {0.0};
 Double_t B_integrals_arr[N_Charge][N_Bins_Centr][N_Bins_Kt] = {0.0};
 Double_t Norm_coeff_arr[N_Charge][N_Bins_Centr][N_Bins_Kt] = {0.0}; // Norm_coeff = B/A
 
+Double_t Integral_of_cube_NO_center = 0.0; //For denumerator of fit function
 
+TH3F* h_Hist_with_ones = (TH3F*)h_Arr_3D[1][0][0][0]->Clone("h_Hist_with_ones");
+
+//Fill hist with ONES:
+for(Int_t i = 1;i<=h_Hist_with_ones->GetNbinsX();i++)
+{
+    for(Int_t j = 1;j<=h_Hist_with_ones->GetNbinsY();j++)
+    {
+        for(Int_t k = 1;k<=h_Hist_with_ones->GetNbinsZ();k++)
+        {
+            h_Hist_with_ones->SetBinContent(i,j,k,1.0);
+        }
+    }
+}
+//Count Integral for B fit normalize:
+Integral_of_cube_NO_center= h_Hist_with_ones->Integral(
+                q_i_min_max_bins[0][0][0][0][0], q_i_min_max_bins[3][0][0][0][0],
+                q_i_min_max_bins[0][0][0][0][1], q_i_min_max_bins[3][0][0][0][1],
+                q_i_min_max_bins[0][0][0][0][2], q_i_min_max_bins[3][0][0][0][2]) 
+
+                - h_Hist_with_ones->Integral(
+                q_i_min_max_bins[1][0][0][0][0], q_i_min_max_bins[2][0][0][0][0],
+                q_i_min_max_bins[1][0][0][0][1], q_i_min_max_bins[2][0][0][0][1],
+                q_i_min_max_bins[1][0][0][0][2], q_i_min_max_bins[2][0][0][0][2]
+                );
+             
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 {
     for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
@@ -162,24 +188,24 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
         {
 
             A_integrals_arr[iCh][iCent][iKt]= h_Arr_3D[0][iCh][iCent][iKt]->Integral(
-                q_i_min_max_bins[0][iCh][iCent][iKt][0], q_i_min_max_bins[1][iCh][iCent][iKt][0],
-                q_i_min_max_bins[0][iCh][iCent][iKt][1], q_i_min_max_bins[1][iCh][iCent][iKt][1],
-                q_i_min_max_bins[0][iCh][iCent][iKt][2], q_i_min_max_bins[1][iCh][iCent][iKt][2]) 
+                q_i_min_max_bins[0][iCh][iCent][iKt][0], q_i_min_max_bins[3][iCh][iCent][iKt][0],
+                q_i_min_max_bins[0][iCh][iCent][iKt][1], q_i_min_max_bins[3][iCh][iCent][iKt][1],
+                q_i_min_max_bins[0][iCh][iCent][iKt][2], q_i_min_max_bins[3][iCh][iCent][iKt][2]) 
 
-                + h_Arr_3D[0][iCh][iCent][iKt]->Integral(
-                q_i_min_max_bins[2][iCh][iCent][iKt][0], q_i_min_max_bins[3][iCh][iCent][iKt][0],
-                q_i_min_max_bins[2][iCh][iCent][iKt][1], q_i_min_max_bins[3][iCh][iCent][iKt][1],
-                q_i_min_max_bins[2][iCh][iCent][iKt][2], q_i_min_max_bins[3][iCh][iCent][iKt][2]
+                - h_Arr_3D[0][iCh][iCent][iKt]->Integral(
+                q_i_min_max_bins[1][iCh][iCent][iKt][0], q_i_min_max_bins[2][iCh][iCent][iKt][0],
+                q_i_min_max_bins[1][iCh][iCent][iKt][1], q_i_min_max_bins[2][iCh][iCent][iKt][1],
+                q_i_min_max_bins[1][iCh][iCent][iKt][2], q_i_min_max_bins[2][iCh][iCent][iKt][2]
                 );
             B_integrals_arr[iCh][iCent][iKt]= h_Arr_3D[1][iCh][iCent][iKt]->Integral(
-                q_i_min_max_bins[0][iCh][iCent][iKt][0], q_i_min_max_bins[1][iCh][iCent][iKt][0],
-                q_i_min_max_bins[0][iCh][iCent][iKt][1], q_i_min_max_bins[1][iCh][iCent][iKt][1],
-                q_i_min_max_bins[0][iCh][iCent][iKt][2], q_i_min_max_bins[1][iCh][iCent][iKt][2]) 
+                q_i_min_max_bins[0][iCh][iCent][iKt][0], q_i_min_max_bins[3][iCh][iCent][iKt][0],
+                q_i_min_max_bins[0][iCh][iCent][iKt][1], q_i_min_max_bins[3][iCh][iCent][iKt][1],
+                q_i_min_max_bins[0][iCh][iCent][iKt][2], q_i_min_max_bins[3][iCh][iCent][iKt][2]) 
 
-                + h_Arr_3D[1][iCh][iCent][iKt]->Integral(
-                q_i_min_max_bins[2][iCh][iCent][iKt][0], q_i_min_max_bins[3][iCh][iCent][iKt][0],
-                q_i_min_max_bins[2][iCh][iCent][iKt][1], q_i_min_max_bins[3][iCh][iCent][iKt][1],
-                q_i_min_max_bins[2][iCh][iCent][iKt][2], q_i_min_max_bins[3][iCh][iCent][iKt][2]
+                - h_Arr_3D[1][iCh][iCent][iKt]->Integral(
+                q_i_min_max_bins[1][iCh][iCent][iKt][0], q_i_min_max_bins[2][iCh][iCent][iKt][0],
+                q_i_min_max_bins[1][iCh][iCent][iKt][1], q_i_min_max_bins[2][iCh][iCent][iKt][1],
+                q_i_min_max_bins[1][iCh][iCent][iKt][2], q_i_min_max_bins[2][iCh][iCent][iKt][2]
                 );
 
             Norm_coeff_arr[iCh][iCent][iKt] = B_integrals_arr[iCh][iCent][iKt]/A_integrals_arr[iCh][iCent][iKt];
@@ -200,7 +226,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 }
 
 // 2) Getting projections:
-const Double_t range = 0.01;//Gev/c              
+const Double_t range = 0.04;//Gev/c              
 TH1F* h_Arr_3D_Projects_OSL[N_hist_types_3D][N_Charge][N_Bins_Centr][N_Bins_Kt][3];
 
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
@@ -454,7 +480,8 @@ for(Int_t i = 1;i<=h_Fit_No_Coul[1][iCh][iCent][iKt]->GetNbinsX();i++)
     {
         for(Int_t k = 1;k<=h_Fit_No_Coul[1][iCh][iCent][iKt]->GetNbinsZ();k++)
         {
-            h_Fit_No_Coul[1][iCh][iCent][iKt]->SetBinContent(i,j,k,1.0);
+            h_Fit_No_Coul[1][iCh][iCent][iKt]->SetBinContent(i,j,k,h_Arr_3D[1][iCh][iCent][iKt]->GetBinContent(
+                h_Arr_3D[1][iCh][iCent][iKt]->FindBin(i,j,k)));
         }
     }
 }
@@ -539,7 +566,8 @@ for(Int_t i = 1;i<=h_Fit_Coul[1][iCh][iCent][iKt]->GetNbinsX();i++)
     {
         for(Int_t k = 1;k<=h_Fit_Coul[1][iCh][iCent][iKt]->GetNbinsZ();k++)
         {
-            h_Fit_Coul[1][iCh][iCent][iKt]->SetBinContent(i,j,k,1.0);
+            h_Fit_Coul[1][iCh][iCent][iKt]->SetBinContent(i,j,k,h_Arr_3D[1][iCh][iCent][iKt]->GetBinContent(
+                h_Arr_3D[1][iCh][iCent][iKt]->FindBin(i,j,k)));
         }
     }
 }
