@@ -1,10 +1,10 @@
 //This macro for plus & minus pions data in one CF
 //this macro creates .root file with fit data
-//also this .root file will contain 3D_CF & B_weighted for each [charge][Centrality][K_t] 
+//also this .root file will contain 3D_CF & B_weighted for each [Centrality][K_t] 
 
 //this macro Fits with &without Coulomb 3D_CF 
 //this macro projects Fit surface on the OSL projections
-//this macro does this for each [charge][centrality][k_t]
+//this macro does this for each [centrality][k_t]
 
 //after this macro you can execute CF_3D_osl_proj_paint_No_Fit
 #include "TFile.h"
