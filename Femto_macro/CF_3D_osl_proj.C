@@ -1,4 +1,5 @@
 //this macro creates .root file with projections of 3D_CF for each [charge][Centrality][K_t][projection]
+//this macro creates .root file with fit data
 //also this .root file will contain 3D_CF & B_weighted for each [charge][Centrality][K_t] 
 
 //this macro Fits with &without Coulomb 3D_CF 
@@ -114,8 +115,10 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 }
 
 // 1) Calculating Norm. coeff:
-const Double_t q_i_min = 0.1;
-const Double_t q_i_max = 0.2;
+const Double_t q_i_0 = -0.195;
+const Double_t q_i_1 = -0.095;
+const Double_t q_i_2 =  0.095;
+const Double_t q_i_3 =  0.195;
 
 //A and B hists must be with same binning via all directions - out,side,long
 Double_t q_i_min_max_bins[4][N_Charge][N_Bins_Centr][N_Bins_Kt][3] = {0.0};
@@ -128,22 +131,22 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
         for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
         {
 
-            q_i_min_max_bins[0][iCh][iCent][iKt][0] = h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->FindBin(-q_i_max);
-            q_i_min_max_bins[0][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(-q_i_max);
-            q_i_min_max_bins[0][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(-q_i_max);
+            q_i_min_max_bins[0][iCh][iCent][iKt][0] = h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->FindBin(q_i_0);
+            q_i_min_max_bins[0][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(q_i_0);
+            q_i_min_max_bins[0][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(q_i_0);
 
 
-            q_i_min_max_bins[1][iCh][iCent][iKt][0] = h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->FindBin(-q_i_min);
-            q_i_min_max_bins[1][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(-q_i_min);
-            q_i_min_max_bins[1][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(-q_i_min);
+            q_i_min_max_bins[1][iCh][iCent][iKt][0] = h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->FindBin(q_i_1);
+            q_i_min_max_bins[1][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(q_i_1);
+            q_i_min_max_bins[1][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(q_i_1);
 
-            q_i_min_max_bins[2][iCh][iCent][iKt][0] = h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->FindBin(q_i_min);
-            q_i_min_max_bins[2][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(q_i_min);
-            q_i_min_max_bins[2][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(q_i_min);
+            q_i_min_max_bins[2][iCh][iCent][iKt][0] = h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->FindBin(q_i_2);
+            q_i_min_max_bins[2][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(q_i_2);
+            q_i_min_max_bins[2][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(q_i_2);
 
-            q_i_min_max_bins[3][iCh][iCent][iKt][0] = h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->FindBin(q_i_max);
-            q_i_min_max_bins[3][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(q_i_max);
-            q_i_min_max_bins[3][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(q_i_max);
+            q_i_min_max_bins[3][iCh][iCent][iKt][0] = h_Arr_3D[0][iCh][iCent][iKt]->GetXaxis()->FindBin(q_i_3);
+            q_i_min_max_bins[3][iCh][iCent][iKt][1] = h_Arr_3D[0][iCh][iCent][iKt]->GetYaxis()->FindBin(q_i_3);
+            q_i_min_max_bins[3][iCh][iCent][iKt][2] = h_Arr_3D[0][iCh][iCent][iKt]->GetZaxis()->FindBin(q_i_3);
 
         }
     }
@@ -153,33 +156,34 @@ Double_t A_integrals_arr[N_Charge][N_Bins_Centr][N_Bins_Kt] = {0.0};
 Double_t B_integrals_arr[N_Charge][N_Bins_Centr][N_Bins_Kt] = {0.0};
 Double_t Norm_coeff_arr[N_Charge][N_Bins_Centr][N_Bins_Kt] = {0.0}; // Norm_coeff = B/A
 
-Double_t Integral_of_cube_NO_center = 0.0; //For denumerator of fit function
+// Double_t Integral_of_cube_NO_center = 0.0; //For denumerator of fit function
 
-TH3F* h_Hist_with_ones = (TH3F*)h_Arr_3D[1][0][0][0]->Clone("h_Hist_with_ones");
+// TH3F* h_Hist_with_ones = (TH3F*)h_Arr_3D[1][0][0][0]->Clone("h_Hist_with_ones");
 
-//Fill hist with ONES:
-for(Int_t i = 1;i<=h_Hist_with_ones->GetNbinsX();i++)
-{
-    for(Int_t j = 1;j<=h_Hist_with_ones->GetNbinsY();j++)
-    {
-        for(Int_t k = 1;k<=h_Hist_with_ones->GetNbinsZ();k++)
-        {
-            h_Hist_with_ones->SetBinContent(i,j,k,1.0);
-        }
-    }
-}
-//Count Integral for B fit normalize:
-Integral_of_cube_NO_center= h_Hist_with_ones->Integral(
-                q_i_min_max_bins[0][0][0][0][0], q_i_min_max_bins[3][0][0][0][0],
-                q_i_min_max_bins[0][0][0][0][1], q_i_min_max_bins[3][0][0][0][1],
-                q_i_min_max_bins[0][0][0][0][2], q_i_min_max_bins[3][0][0][0][2]) 
+// //Fill hist with ONES:
+// for(Int_t i = 1;i<=h_Hist_with_ones->GetNbinsX();i++)
+// {
+//     for(Int_t j = 1;j<=h_Hist_with_ones->GetNbinsY();j++)
+//     {
+//         for(Int_t k = 1;k<=h_Hist_with_ones->GetNbinsZ();k++)
+//         {
+//             h_Hist_with_ones->SetBinContent(i,j,k,1.0);
+//         }
+//     }
+// }
+// //Count Integral for B fit normalize:
+// Integral_of_cube_NO_center= h_Hist_with_ones->Integral(
+//                 q_i_min_max_bins[0][0][0][0][0], q_i_min_max_bins[3][0][0][0][0],
+//                 q_i_min_max_bins[0][0][0][0][1], q_i_min_max_bins[3][0][0][0][1],
+//                 q_i_min_max_bins[0][0][0][0][2], q_i_min_max_bins[3][0][0][0][2]) 
 
-                - h_Hist_with_ones->Integral(
-                q_i_min_max_bins[1][0][0][0][0], q_i_min_max_bins[2][0][0][0][0],
-                q_i_min_max_bins[1][0][0][0][1], q_i_min_max_bins[2][0][0][0][1],
-                q_i_min_max_bins[1][0][0][0][2], q_i_min_max_bins[2][0][0][0][2]
-                );
-             
+//                 - h_Hist_with_ones->Integral(
+//                 q_i_min_max_bins[1][0][0][0][0], q_i_min_max_bins[2][0][0][0][0],
+//                 q_i_min_max_bins[1][0][0][0][1], q_i_min_max_bins[2][0][0][0][1],
+//                 q_i_min_max_bins[1][0][0][0][2], q_i_min_max_bins[2][0][0][0][2]
+//                 );          
+// std::cout<< Integral_of_cube_NO_center <<std::endl;
+
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 {
     for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
@@ -226,7 +230,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 }
 
 // 2) Getting projections:
-const Double_t range = 0.04;//Gev/c              
+const Double_t range = 0.045;//Gev/c              
 TH1F* h_Arr_3D_Projects_OSL[N_hist_types_3D][N_Charge][N_Bins_Centr][N_Bins_Kt][3];
 
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
@@ -468,7 +472,11 @@ for(Int_t i = 1;i<=h_Fit_No_Coul[0][iCh][iCent][iKt]->GetNbinsX();i++)
             x_arr[2]=h_Fit_No_Coul[0][iCh][iCent][iKt]->GetZaxis()->GetBinCenter(k);
 
             Int_t bin = h_Fit_No_Coul[0][iCh][iCent][iKt]->GetBin(i,j,k);
-            h_Fit_No_Coul[0][iCh][iCent][iKt]->SetBinContent(bin, f_No_Coul_Arr[iCh][iCent][iKt]->Eval(x_arr[0],x_arr[1],x_arr[2]));
+            //Here we must du Cf = B*Cf/B
+            //A <-> B*Cf:
+            Double_t B_value_for_FitFunc = h_Arr_3D[1][iCh][iCent][iKt]->GetBinContent(bin);
+            h_Fit_No_Coul[0][iCh][iCent][iKt]->SetBinContent(bin, 
+                                              B_value_for_FitFunc*f_No_Coul_Arr[iCh][iCent][iKt]->Eval(x_arr[0],x_arr[1],x_arr[2]));
         }
     }
 }
@@ -480,8 +488,7 @@ for(Int_t i = 1;i<=h_Fit_No_Coul[1][iCh][iCent][iKt]->GetNbinsX();i++)
     {
         for(Int_t k = 1;k<=h_Fit_No_Coul[1][iCh][iCent][iKt]->GetNbinsZ();k++)
         {
-            h_Fit_No_Coul[1][iCh][iCent][iKt]->SetBinContent(i,j,k,h_Arr_3D[1][iCh][iCent][iKt]->GetBinContent(
-                h_Arr_3D[1][iCh][iCent][iKt]->FindBin(i,j,k)));
+            h_Fit_No_Coul[1][iCh][iCent][iKt]->SetBinContent(i,j,k,h_Arr_3D[1][iCh][iCent][iKt]->GetBinContent(i,j,k));
         }
     }
 }
@@ -554,7 +561,9 @@ for(Int_t i = 1;i<=h_Fit_Coul[0][iCh][iCent][iKt]->GetNbinsX();i++)
             cur_iCh=iCh;
             cur_iCent=iCent;
             cur_iKt=iKt;
-            h_Fit_Coul[0][iCh][iCent][iKt]->SetBinContent(bin, f_Coul_Arr[iCh][iCent][iKt]->Eval(x_arr[0],x_arr[1],x_arr[2]));
+            Double_t B_value_for_FitFunc = h_Arr_3D[1][iCh][iCent][iKt]->GetBinContent(bin);
+            h_Fit_Coul[0][iCh][iCent][iKt]->SetBinContent(bin, 
+                                            B_value_for_FitFunc*f_Coul_Arr[iCh][iCent][iKt]->Eval(x_arr[0],x_arr[1],x_arr[2]));
         }
     }
 }
@@ -566,8 +575,7 @@ for(Int_t i = 1;i<=h_Fit_Coul[1][iCh][iCent][iKt]->GetNbinsX();i++)
     {
         for(Int_t k = 1;k<=h_Fit_Coul[1][iCh][iCent][iKt]->GetNbinsZ();k++)
         {
-            h_Fit_Coul[1][iCh][iCent][iKt]->SetBinContent(i,j,k,h_Arr_3D[1][iCh][iCent][iKt]->GetBinContent(
-                h_Arr_3D[1][iCh][iCent][iKt]->FindBin(i,j,k)));
+            h_Fit_Coul[1][iCh][iCent][iKt]->SetBinContent(i,j,k,h_Arr_3D[1][iCh][iCent][iKt]->GetBinContent(i,j,k));
         }
     }
 }
