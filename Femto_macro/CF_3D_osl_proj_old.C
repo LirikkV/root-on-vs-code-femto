@@ -5,8 +5,6 @@
 //this macro Fits with &without Coulomb 3D_CF 
 //this macro projects Fit surface on the OSL projections
 //this macro does this for each [charge][centrality][k_t]
-
-//after this macro you can execute CF_3D_osl_proj_paint_No_Fit
 #include "TFile.h"
 #include "TF1.h"
 #include "TF3.h"
@@ -47,6 +45,7 @@ struct FitResult {
 };
 
 const TString Input_File = "/home/kirill/root-on-vs-code/Femto_input/out_Au_Au200_07_05_FMRW_article.root";
+const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/out_Au_Au200_20_05_FMR_pr_3D_proj.root";
 const TString Output_params_File = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/out_Au_Au200_20_05_FMR_pr_3D_proj_params.root";
 const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/";
 const TString Input_K_file = "/home/kirill/root-on-vs-code/Femto_macro/Kqinv_R_5fm.root";
@@ -97,7 +96,7 @@ if (!f || f->IsZombie()) {std::cout << "Ohhhhh" << std::endl; exit(0); }
 TString hist_3D_Name = "h_3D";
 
 TH3F* h_Arr_3D[N_hist_types_3D][N_Charge][N_Bins_Centr][N_Bins_Kt];
-// Double_t Entries_in_A_arr[N_Charge][N_Bins_Centr][N_Bins_Kt];
+Double_t Entries_in_A_arr[N_Charge][N_Bins_Centr][N_Bins_Kt];
 
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 {
@@ -110,7 +109,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
             //3D:
             h_Arr_3D[ihType][iCh][iCent][iKt] = (TH3F* )f->Get(Form("%s_%i_%i_%i_%i",hist_3D_Name.Data(),ihType,iCh,iCent,iKt));
             }
-            //Entries_in_A_arr[iCh][iCent][iKt] = h_Arr_3D[0][iCh][iCent][iKt]->GetEntries();
+            Entries_in_A_arr[iCh][iCent][iKt] = h_Arr_3D[0][iCh][iCent][iKt]->GetEntries();
         }
     }
 }
@@ -214,6 +213,7 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
                 );
 
             Norm_coeff_arr[iCh][iCent][iKt] = B_integrals_arr[iCh][iCent][iKt]/A_integrals_arr[iCh][iCent][iKt];
+            //std::cout<< A_integrals_arr[iCh][iCent][iKt]<< " "<< B_integrals_arr[iCh][iCent][iKt]<< " " <<iCent<<" "<< Norm_coeff_arr[iCh][iCent][iKt]<<std::endl;
         }
     }
 }
@@ -229,6 +229,42 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
     }
 }
 
+// 2) Getting projections:
+const Double_t range = 0.045;//Gev/c              
+TH1F* h_Arr_3D_Projects_OSL[N_hist_types_3D][N_Charge][N_Bins_Centr][N_Bins_Kt][3];
+
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+                for (Int_t ihType=0; ihType < N_hist_types_3D; ihType++)
+                {
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetYaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetZaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][0] = (TH1F*)h_Arr_3D[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[0]);
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][0]->SetName(Form("CF_3D_proj_%i_%i_%i_%i_%s",ihType,iCh,iCent,iKt,OSL_names[0].Data()));
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetYaxis()->SetRange();
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetZaxis()->SetRange();
+
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetXaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetZaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][1] = (TH1F*)h_Arr_3D[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[1]);
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][1]->SetName(Form("CF_3D_proj_%i_%i_%i_%i_%s",ihType,iCh,iCent,iKt,OSL_names[1].Data()));
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetXaxis()->SetRange();
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetZaxis()->SetRange();
+
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetXaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetYaxis()->SetRangeUser(-range,range);
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][2] = (TH1F*)h_Arr_3D[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[2]);
+                    h_Arr_3D_Projects_OSL[ihType][iCh][iCent][iKt][2]->SetName(Form("CF_3D_proj_%i_%i_%i_%i_%s",ihType,iCh,iCent,iKt,OSL_names[2].Data()));
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetXaxis()->SetRange();
+                    h_Arr_3D[ihType][iCh][iCent][iKt]->GetYaxis()->SetRange();
+                }
+        }
+    }
+}
 // //Deviding A/B:
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 {
@@ -236,10 +272,10 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
     {
         for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
         {
-                    // for(Int_t iOSL =0;iOSL<3;iOSL++)
-                    // {
-                    //     h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Divide(h_Arr_3D_Projects_OSL[1][iCh][iCent][iKt][iOSL]);
-                    // }
+                    for(Int_t iOSL =0;iOSL<3;iOSL++)
+                    {
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Divide(h_Arr_3D_Projects_OSL[1][iCh][iCent][iKt][iOSL]);
+                    }
                     h_Arr_3D[0][iCh][iCent][iKt]->Divide(h_Arr_3D[1][iCh][iCent][iKt]);
         }
     }
@@ -389,6 +425,262 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 
 }}}
 
+
+TFile *f_out = new TFile(Output_File, "RECREATE");
+//Writing CF projections & CF_3D B_weighted:
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+                    for(Int_t iOSL =0;iOSL<3;iOSL++)
+                    {
+                        //CF_projections:
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Write();
+                    }
+        }
+    }
+}
+
+//Hists for drawing projections of fit:
+TH3F* h_Fit_No_Coul[2][N_Charge][N_Bins_Centr][N_Bins_Kt];
+TH1F* h_Fit_No_Coul_Proj[2][N_Charge][N_Bins_Centr][N_Bins_Kt][3];
+
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+            TString name_hA_Fit_No_Coul = TString::Format("hA_Fit_No_Coul_%d_%d_%d",iCh,iCent,iKt);
+            TString name_hB_Fit_No_Coul = TString::Format("hB_Fit_No_Coul_%d_%d_%d",iCh,iCent,iKt);
+            h_Fit_No_Coul[0][iCh][iCent][iKt] = (TH3F*)h_Arr_3D[0][iCh][iCent][iKt]->Clone(name_hA_Fit_No_Coul);
+            h_Fit_No_Coul[1][iCh][iCent][iKt] = (TH3F*)h_Arr_3D[0][iCh][iCent][iKt]->Clone(name_hB_Fit_No_Coul);
+
+                    
+//Fill A hist:
+double x_arr[3];
+for(Int_t i = 1;i<=h_Fit_No_Coul[0][iCh][iCent][iKt]->GetNbinsX();i++)
+{
+    x_arr[0]=h_Fit_No_Coul[0][iCh][iCent][iKt]->GetXaxis()->GetBinCenter(i);
+    for(Int_t j = 1;j<=h_Fit_No_Coul[0][iCh][iCent][iKt]->GetNbinsY();j++)
+    {
+        x_arr[1]=h_Fit_No_Coul[0][iCh][iCent][iKt]->GetYaxis()->GetBinCenter(j);
+        for(Int_t k = 1;k<=h_Fit_No_Coul[0][iCh][iCent][iKt]->GetNbinsZ();k++)
+        {
+            x_arr[2]=h_Fit_No_Coul[0][iCh][iCent][iKt]->GetZaxis()->GetBinCenter(k);
+
+            Int_t bin = h_Fit_No_Coul[0][iCh][iCent][iKt]->GetBin(i,j,k);
+            //Here we must du Cf = B*Cf/B
+            //A <-> B*Cf:
+            Double_t B_value_for_FitFunc = h_Arr_3D[1][iCh][iCent][iKt]->GetBinContent(bin);
+            h_Fit_No_Coul[0][iCh][iCent][iKt]->SetBinContent(bin, 
+                                              B_value_for_FitFunc*f_No_Coul_Arr[iCh][iCent][iKt]->Eval(x_arr[0],x_arr[1],x_arr[2]));
+        }
+    }
+}
+
+//Fill B hist:
+for(Int_t i = 1;i<=h_Fit_No_Coul[1][iCh][iCent][iKt]->GetNbinsX();i++)
+{
+    for(Int_t j = 1;j<=h_Fit_No_Coul[1][iCh][iCent][iKt]->GetNbinsY();j++)
+    {
+        for(Int_t k = 1;k<=h_Fit_No_Coul[1][iCh][iCent][iKt]->GetNbinsZ();k++)
+        {
+            h_Fit_No_Coul[1][iCh][iCent][iKt]->SetBinContent(i,j,k,h_Arr_3D[1][iCh][iCent][iKt]->GetBinContent(i,j,k));
+        }
+    }
+}
+
+//For Divide fit function A/B:
+for (Int_t ihType = 0; ihType < 2; ihType++)
+{
+    h_Fit_No_Coul[ihType][iCh][iCent][iKt]->GetYaxis()->SetRangeUser(-range, range);
+    h_Fit_No_Coul[ihType][iCh][iCent][iKt]->GetZaxis()->SetRangeUser(-range, range);
+    h_Fit_No_Coul_Proj[ihType][iCh][iCent][iKt][0] = (TH1F *)h_Fit_No_Coul[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[0]);
+    h_Fit_No_Coul_Proj[ihType][iCh][iCent][iKt][0]->SetName(Form("CF_3D_norm_No_Coul_proj_%i_%i_%i_%i_%s", ihType, iCh, iCent, iKt, OSL_names[0].Data()));
+    h_Fit_No_Coul[ihType][iCh][iCent][iKt]->GetYaxis()->SetRange();
+    h_Fit_No_Coul[ihType][iCh][iCent][iKt]->GetZaxis()->SetRange();
+
+    h_Fit_No_Coul[ihType][iCh][iCent][iKt]->GetXaxis()->SetRangeUser(-range, range);
+    h_Fit_No_Coul[ihType][iCh][iCent][iKt]->GetZaxis()->SetRangeUser(-range, range);
+    h_Fit_No_Coul_Proj[ihType][iCh][iCent][iKt][1] = (TH1F *)h_Fit_No_Coul[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[1]);
+    h_Fit_No_Coul_Proj[ihType][iCh][iCent][iKt][1]->SetName(Form("CF_3D_norm_No_Coul_proj_%i_%i_%i_%i_%s", ihType, iCh, iCent, iKt, OSL_names[1].Data()));
+    h_Fit_No_Coul[ihType][iCh][iCent][iKt]->GetXaxis()->SetRange();
+    h_Fit_No_Coul[ihType][iCh][iCent][iKt]->GetZaxis()->SetRange();
+
+    h_Fit_No_Coul[ihType][iCh][iCent][iKt]->GetXaxis()->SetRangeUser(-range, range);
+    h_Fit_No_Coul[ihType][iCh][iCent][iKt]->GetYaxis()->SetRangeUser(-range, range);
+    h_Fit_No_Coul_Proj[ihType][iCh][iCent][iKt][2] = (TH1F *)h_Fit_No_Coul[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[2]);
+    h_Fit_No_Coul_Proj[ihType][iCh][iCent][iKt][2]->SetName(Form("CF_3D_norm_No_Coul_proj_%i_%i_%i_%i_%s", ihType, iCh, iCent, iKt, OSL_names[2].Data()));
+    h_Fit_No_Coul[ihType][iCh][iCent][iKt]->GetXaxis()->SetRange();
+    h_Fit_No_Coul[ihType][iCh][iCent][iKt]->GetYaxis()->SetRange();
+}
+// //Deviding A/B:
+
+for (Int_t iOSL = 0; iOSL < 3; iOSL++)
+{
+    h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Divide(h_Fit_No_Coul_Proj[1][iCh][iCent][iKt][iOSL]);
+    h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL]->GetXaxis()->SetRangeUser(x1_fit_range,x2_fit_range);  
+}
+}}}
+//----------------------------------------------------------------------------------------------------//
+
+//Now Same for Coulomb:
+
+//Hists for drawing projections of fit:
+TH3F* h_Fit_Coul[2][N_Charge][N_Bins_Centr][N_Bins_Kt];
+TH1F* h_Fit_Coul_Proj[2][N_Charge][N_Bins_Centr][N_Bins_Kt][3];
+
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+            TString name_hA_Fit_Coul = TString::Format("hA_Fit_Coul_%d_%d_%d",iCh,iCent,iKt);
+            TString name_hB_Fit_Coul = TString::Format("hB_Fit_Coul_%d_%d_%d",iCh,iCent,iKt);
+            h_Fit_Coul[0][iCh][iCent][iKt] = (TH3F*)h_Arr_3D[0][iCh][iCent][iKt] ->Clone(name_hA_Fit_Coul);
+            h_Fit_Coul[1][iCh][iCent][iKt] = (TH3F*)h_Arr_3D[0][iCh][iCent][iKt] ->Clone(name_hB_Fit_Coul);
+
+//Fill A hist:
+double x_arr[3];
+for(Int_t i = 1;i<=h_Fit_Coul[0][iCh][iCent][iKt]->GetNbinsX();i++)
+{
+    x_arr[0]=h_Fit_Coul[0][iCh][iCent][iKt]->GetXaxis()->GetBinCenter(i);
+    for(Int_t j = 1;j<=h_Fit_Coul[0][iCh][iCent][iKt]->GetNbinsY();j++)
+    {
+        x_arr[1]=h_Fit_Coul[0][iCh][iCent][iKt]->GetYaxis()->GetBinCenter(j);
+        for(Int_t k = 1;k<=h_Fit_Coul[0][iCh][iCent][iKt]->GetNbinsZ();k++)
+        {
+            x_arr[2]=h_Fit_Coul[0][iCh][iCent][iKt]->GetZaxis()->GetBinCenter(k);
+
+            Int_t bin = h_Fit_Coul[0][iCh][iCent][iKt]->GetBin(i,j,k);
+            //WARNING global variables for evaluation of fit function:
+            cur_iCh=iCh;
+            cur_iCent=iCent;
+            cur_iKt=iKt;
+            Double_t B_value_for_FitFunc = h_Arr_3D[1][iCh][iCent][iKt]->GetBinContent(bin);
+            h_Fit_Coul[0][iCh][iCent][iKt]->SetBinContent(bin, 
+                                            B_value_for_FitFunc*f_Coul_Arr[iCh][iCent][iKt]->Eval(x_arr[0],x_arr[1],x_arr[2]));
+        }
+    }
+}
+
+//Fill B hist:
+for(Int_t i = 1;i<=h_Fit_Coul[1][iCh][iCent][iKt]->GetNbinsX();i++)
+{
+    for(Int_t j = 1;j<=h_Fit_Coul[1][iCh][iCent][iKt]->GetNbinsY();j++)
+    {
+        for(Int_t k = 1;k<=h_Fit_Coul[1][iCh][iCent][iKt]->GetNbinsZ();k++)
+        {
+            h_Fit_Coul[1][iCh][iCent][iKt]->SetBinContent(i,j,k,h_Arr_3D[1][iCh][iCent][iKt]->GetBinContent(i,j,k));
+        }
+    }
+}
+
+//For Divide fit function A/B:
+for (Int_t ihType = 0; ihType < 2; ihType++)
+{
+    h_Fit_Coul[ihType][iCh][iCent][iKt]->GetYaxis()->SetRangeUser(-range, range);
+    h_Fit_Coul[ihType][iCh][iCent][iKt]->GetZaxis()->SetRangeUser(-range, range);
+    h_Fit_Coul_Proj[ihType][iCh][iCent][iKt][0] = (TH1F *)h_Fit_Coul[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[0]);
+    h_Fit_Coul_Proj[ihType][iCh][iCent][iKt][0]->SetName(Form("CF_3D_norm_Coul_proj_%i_%i_%i_%i_%s", ihType, iCh, iCent, iKt, OSL_names[0].Data()));
+    h_Fit_Coul[ihType][iCh][iCent][iKt]->GetYaxis()->SetRange();
+    h_Fit_Coul[ihType][iCh][iCent][iKt]->GetZaxis()->SetRange();
+
+    h_Fit_Coul[ihType][iCh][iCent][iKt]->GetXaxis()->SetRangeUser(-range, range);
+    h_Fit_Coul[ihType][iCh][iCent][iKt]->GetZaxis()->SetRangeUser(-range, range);
+    h_Fit_Coul_Proj[ihType][iCh][iCent][iKt][1] = (TH1F *)h_Fit_Coul[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[1]);
+    h_Fit_Coul_Proj[ihType][iCh][iCent][iKt][1]->SetName(Form("CF_3D_norm_Coul_proj_%i_%i_%i_%i_%s", ihType, iCh, iCent, iKt, OSL_names[1].Data()));
+    h_Fit_Coul[ihType][iCh][iCent][iKt]->GetXaxis()->SetRange();
+    h_Fit_Coul[ihType][iCh][iCent][iKt]->GetZaxis()->SetRange();
+
+    h_Fit_Coul[ihType][iCh][iCent][iKt]->GetXaxis()->SetRangeUser(-range, range);
+    h_Fit_Coul[ihType][iCh][iCent][iKt]->GetYaxis()->SetRangeUser(-range, range);
+    h_Fit_Coul_Proj[ihType][iCh][iCent][iKt][2] = (TH1F *)h_Fit_Coul[ihType][iCh][iCent][iKt]->Project3D(OSL_xyz[2]);
+    h_Fit_Coul_Proj[ihType][iCh][iCent][iKt][2]->SetName(Form("CF_3D_norm_Coul_proj_%i_%i_%i_%i_%s", ihType, iCh, iCent, iKt, OSL_names[2].Data()));
+    h_Fit_Coul[ihType][iCh][iCent][iKt]->GetXaxis()->SetRange();
+    h_Fit_Coul[ihType][iCh][iCent][iKt]->GetYaxis()->SetRange();
+}
+// //Deviding A/B:
+
+for (Int_t iOSL = 0; iOSL < 3; iOSL++)
+{
+    h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Divide(h_Fit_Coul_Proj[1][iCh][iCent][iKt][iOSL]);
+    h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL]->GetXaxis()->SetRangeUser(x1_fit_range,x2_fit_range);  
+}
+
+}}}
+//Drawing projections:
+
+TCanvas* c_3D_Proj_Arr[N_Charge][N_Bins_Centr][N_Bins_Kt][3];
+
+for (Int_t iCh = 0; iCh < N_Charge; iCh++)
+{
+    for (Int_t iCent = 0; iCent < N_Bins_Centr; iCent++)
+    {
+        for (Int_t iKt = 0; iKt < N_Bins_Kt; iKt++)
+        {
+                    for(Int_t iOSL =0;iOSL<3;iOSL++)
+                    {
+                        TString canv_name = TString::Format("c_3D_%d_%d_%d_%d",iCh,iCent,iKt,iOSL);
+                        TString canv_title = Charged_particles_pairs_titles[iCh] +", Centr: "+ Centrality_region_titles[iCent]
+                        + ", Kt: " + Kt_bins_titles[iKt] +", "+ OSL_names[iOSL]+" projection";
+                        c_3D_Proj_Arr[iCh][iCent][iKt][iOSL] = new TCanvas(canv_name, canv_title,1920,1080);
+
+
+                        c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->cd();
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->SetTitle(c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->GetTitle());
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->SetStats(0);
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->GetYaxis()->SetRangeUser(0.7,1.5);
+                        h_Arr_3D_Projects_OSL[0][iCh][iCent][iKt][iOSL]->Draw("E");
+
+                        h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL]->SetLineColor(kGreen);
+                        h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Draw("P L SAME HIST");
+
+                        h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL]->SetLineColor(kRed);
+                        h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL]->Draw("P L SAME HIST");
+
+
+                        TLegend* leg = new TLegend(0.55,0.55,0.9,0.9);
+                        leg->SetTextSize(0.04);
+                        leg->SetFillStyle(0);     // Transparent
+
+                        //Entries in A:
+                        leg->AddEntry((TObject*)0, Form(" Entries in A: %.3f Millions", Entries_in_A_arr[iCh][iCent][iKt]/1000000.),"");
+                        // Gauss:
+                        leg->AddEntry(h_Fit_No_Coul_Proj[0][iCh][iCent][iKt][iOSL], "Gauss", "F");
+
+                        leg->AddEntry((TObject*)0, Form(" Chi2/NDF = %.3f", par_No_Coul_Chi_div_NDF[iCh][iCent][iKt]),"");
+
+                        leg->AddEntry((TObject*)0, Form(" N=%.4f #pm %.4f", par_No_Coul[iCh][iCent][iKt][0],par_No_Coul_Err[iCh][iCent][iKt][0]),"");
+                        leg->AddEntry((TObject*)0, Form(" #lambda=%.4f #pm %.4f", par_No_Coul[iCh][iCent][iKt][1],par_No_Coul_Err[iCh][iCent][iKt][1]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{o}=%.3f #pm %.3f", par_No_Coul[iCh][iCent][iKt][2],par_No_Coul_Err[iCh][iCent][iKt][2]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{s}=%.3f #pm %.3f", par_No_Coul[iCh][iCent][iKt][3],par_No_Coul_Err[iCh][iCent][iKt][3]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{l}=%.3f #pm %.3f", par_No_Coul[iCh][iCent][iKt][4],par_No_Coul_Err[iCh][iCent][iKt][4]),"");
+
+                            
+                        // Bowler-Sinyukov:
+                        leg->AddEntry(h_Fit_Coul_Proj[0][iCh][iCent][iKt][iOSL], "Bowler-Sinyukov", "F");
+                            
+                        leg->AddEntry((TObject*)0, Form(" Chi2/NDF = %.3f", par_Coul_Chi_div_NDF[iCh][iCent][iKt]),"");
+
+                        leg->AddEntry((TObject*)0, Form(" N=%.4f #pm %.4f", par_Coul[iCh][iCent][iKt][0],par_Coul_Err[iCh][iCent][iKt][0]),"");
+                        leg->AddEntry((TObject*)0, Form(" #lambda=%.3f #pm %.3f", par_Coul[iCh][iCent][iKt][1],par_Coul_Err[iCh][iCent][iKt][1]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{o}=%.3f #pm %.3f", par_Coul[iCh][iCent][iKt][2],par_Coul_Err[iCh][iCent][iKt][2]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{s}=%.3f #pm %.3f", par_Coul[iCh][iCent][iKt][3],par_Coul_Err[iCh][iCent][iKt][3]),"");
+                        leg->AddEntry((TObject*)0, Form(" R_{l}=%.3f #pm %.3f", par_Coul[iCh][iCent][iKt][4],par_Coul_Err[iCh][iCent][iKt][4]),"");
+
+                        leg->Draw();
+                        
+                        c_3D_Proj_Arr[iCh][iCent][iKt][iOSL]->Write();
+                    }
+        }
+    }
+}
+
 //Let's Fill fit parameters:
 TFile *f_params = new TFile(Output_params_File,"RECREATE");
 TTree *tree_params = new TTree("fit_params_Tree", "Tree of fit parameters");
@@ -437,6 +729,11 @@ for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 
 tree_params->Write();
 f_params->Close();
+
+
+
+f_out->Close();
+
 
 for (Int_t iCh = 0; iCh < N_Charge; iCh++)
 {
