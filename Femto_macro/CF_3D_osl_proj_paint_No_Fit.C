@@ -1,3 +1,5 @@
+//run this macro after CF_3D_osl_proj.C
+//synchronize IO files
 //this macro creates .root file with projections of 3D_CF for each [charge][Centrality][K_t][projection]
 //this macro require .root file with fit data from CF_3D_osl_proj
 //also this .root file will contain 3D_CF & B_weighted for each [charge][Centrality][K_t] 
@@ -43,10 +45,10 @@ struct FitResult {
     Double_t chi2ndf;
 };
 
-const TString Input_File = "/home/kirill/root-on-vs-code/Femto_input/out_Au_Au200_07_05_FMRW_article.root";
-const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/out_Au_Au200_20_05_FMR_pr_3D_proj_From_paint.root";
-const TString Input_params_File = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/out_Au_Au200_20_05_FMR_pr_3D_proj_params.root";
-const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/";
+const TString Input_File = "/home/kirill/root-on-vs-code/Femto_input/out_7p7gev_bes_1_FULL.root";
+const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/26_08_FMR_article/out_7p7gev_bes_1_FULL_FMR_pr_3D_proj_From_paint.root";
+const TString Input_params_File = "/home/kirill/root-on-vs-code/Femto_output/26_08_FMR_article/out_7p7gev_bes_1_FULL_FMR_3D_Fit_params.root";
+const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/26_08_FMR_article/";
 const TString Input_K_file = "/home/kirill/root-on-vs-code/Femto_macro/Kqinv_R_5fm.root";
 const TString OSL_xyz[3] {"x","y","z"};
 const TString OSL_names[3] {"out","side","long"};

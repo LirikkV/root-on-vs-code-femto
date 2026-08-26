@@ -10,14 +10,15 @@
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TStyle.h"
+#include "TH1.h"
 #include "TString.h"
 #include <iostream>
 #include <vector>
 
 // ---------------- User settings ----------------
-const TString Input_File  = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/out_Au_Au200_20_05_FMR_pr_3D_proj_params_21_05.root";
-const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/out_Au_Au200_20_05_FMR_pr_3D_proj_R_Vs_Kt_All_in_One_paint.root";
-const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/20_05_FMRW_article/";
+const TString Input_File  = "/home/kirill/root-on-vs-code/Femto_output/26_08_FMR_article/out_7p7gev_bes_1_FULL_FMR_3D_Fit_params.root";
+const TString Output_File = "/home/kirill/root-on-vs-code/Femto_output/26_08_FMR_article/out_7p7gev_bes_1_FULL_FMR_pr_3D_proj_R_Vs_Kt_All_in_One_paint.root";
+const TString Output_Folder = "/home/kirill/root-on-vs-code/Femto_output/26_08_FMR_article/";
 
 // Choose which fit type to plot: 0 = No Coulomb, 1 = Coulomb (Bowler-Sinyukov)
 const Int_t fitType_to_plot = 1;
@@ -185,13 +186,22 @@ void CF_3D_osl_proj_R_Vs_Kt_All_in_One_paint() {
             if (!firstGr) continue; // should not happen if data exists
 
             // Set titles for this pad
-            firstGr->SetTitle(Form("R_{%s}; K_{T} (GeV/c); R_{%s} (fm)",
-                                   rad_names[ir].Data(), rad_names[ir].Data()));
+            firstGr->SetTitle(Form("R_{%s}; K_{T} (GeV/c);",
+                                   rad_names[ir].Data()));
+
             firstGr->GetYaxis()->SetTitleSize(0.06);
-            firstGr->GetYaxis()->SetLabelSize(0.05);
+            firstGr->GetYaxis()->SetLabelSize(0.09);
+            firstGr->GetYaxis()->SetNdivisions(6, 0, 0); 
+            firstGr->GetYaxis()->SetDecimals(0);
+            firstGr->GetYaxis()->SetLabelFont(62);
+
             firstGr->GetXaxis()->SetTitleSize(0.06);
-            firstGr->GetXaxis()->SetLabelSize(0.05);
+            firstGr->GetXaxis()->SetLabelSize(0.09);
+            firstGr->GetXaxis()->SetNdivisions(4, 0, 0); 
+            firstGr->GetXaxis()->SetLabelFont(62);
+
             firstGr->Draw("AP");
+            firstGr->GetHistogram()->SetTitleSize(0.1, "t");  // главный заголовок пада (R_out и т.д.)
             firstGr->GetYaxis()->SetRangeUser(2.0, 7.0);
 
             // Draw the rest of selected centralities
